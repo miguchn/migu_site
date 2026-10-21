@@ -1,0 +1,297 @@
+/* Scroll choreography and the island's black-cat identity. */
+.hero-art {
+  overflow: clip;
+  --pointer-x: 0deg;
+  --pointer-y: 0deg;
+  perspective: 1100px;
+}
+.hero-art .scene {
+  transform: translateY(var(--hero-shift, 0px)) rotateY(var(--pointer-x))
+    rotateX(var(--pointer-y)) rotateZ(var(--hero-turn, 0deg));
+  transition:
+    transform 0.15s ease-out,
+    background 1s;
+  transform-origin: 50% 65%;
+}
+.cat-eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cat-blink 7s infinite;
+}
+.cat-tail {
+  transform-box: view-box;
+  transform-origin: -7px -4px;
+  animation: tail-sway 4s ease-in-out infinite;
+}
+.cat-portrait .cat-head {
+  transform-box: fill-box;
+  transform-origin: center 90%;
+  animation: cat-think 6s ease-in-out infinite;
+}
+.cat-portrait:hover .cat-paw {
+  transform-box: fill-box;
+  transform-origin: 50% 10%;
+  animation: paw-hello 0.6s ease-in-out 3;
+}
+.cat-portrait:hover .cat-eyes {
+  animation: cat-blink 1.2s infinite;
+}
+.brand:hover .cat-head {
+  transform: translateY(-2px);
+}
+.cat-portrait {
+  background: radial-gradient(ellipse at 36% 27%, #f4e8ce, #d9dfca 80%);
+  box-shadow:
+    inset 0 0 0 1px #cfd7bf,
+    0 20px 60px #647e5112;
+}
+.cat-portrait > span {
+  font: 7px var(--mono);
+  letter-spacing: 1px;
+}
+.project-art .mini-sculpture {
+  transform-origin: 150px 150px;
+  transform: translateY(calc((1 - var(--enter, 1)) * 65px))
+    rotate(calc((1 - var(--enter, 1)) * -17deg));
+  will-change: transform;
+}
+.project-card:nth-child(2) .mini-sculpture {
+  transform: translateY(calc((1 - var(--enter, 1)) * 75px))
+    rotate(calc((1 - var(--enter, 1)) * 20deg));
+}
+.project-card:nth-child(3) .mini-sculpture {
+  transform: translateY(calc((1 - var(--enter, 1)) * 50px))
+    scale(calc(0.7 + var(--enter, 1) * 0.3));
+}
+.explore-item .topic-icon {
+  transform: rotate(calc((1 - var(--enter, 1)) * 120deg))
+    scale(calc(0.5 + var(--enter, 1) * 0.5));
+}
+.about-orbit.orbit-one {
+  transform: rotate(calc(-70deg + var(--enter, 1) * 45deg));
+}
+.about-orbit.orbit-two {
+  transform: rotate(calc(30deg - var(--enter, 1) * 55deg));
+}
+.about-art .cat-portrait {
+  transform: translateY(calc((1 - var(--enter, 1)) * 80px))
+    rotate(calc(-20deg + var(--enter, 1) * 13deg))
+    scale(calc(0.8 + var(--enter, 1) * 0.2));
+}
+.contact-portal {
+  position: absolute;
+  width: 170px;
+  height: 245px;
+  right: 13%;
+  top: 75px;
+  border-radius: 100px 100px 0 0;
+  background: #cf9b86;
+  border: 16px solid #eed5b8;
+  box-shadow: 16px -8px 0 #c4ad91;
+  perspective: 800px;
+  transform: rotate(-7deg) translateY(calc((1 - var(--enter, 1)) * 60px));
+}
+.portal-sky {
+  position: absolute;
+  inset: 0;
+  border-radius: 100px 100px 0 0;
+  background: radial-gradient(circle at 50% 18%, #778b90, #2e4d53 80%);
+  overflow: hidden;
+}
+.portal-sky:after {
+  content: "";
+  position: absolute;
+  bottom: -30px;
+  left: 10px;
+  width: 100px;
+  height: 100px;
+  background: #c7b8a0;
+  transform: rotate(45deg);
+}
+.portal-sky span {
+  position: absolute;
+  top: 40px;
+  left: 20px;
+  color: #f6dbab;
+  font-size: 28px;
+}
+.portal-sky i {
+  position: absolute;
+  top: 85px;
+  right: 15px;
+  color: #f6dbab;
+  font-size: 15px;
+  font-style: normal;
+}
+.portal-door {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: linear-gradient(90deg, #d4a78d, #e1b99d);
+  backface-visibility: hidden;
+}
+.door-left {
+  left: 0;
+  border-radius: 100px 0 0 0;
+  transform-origin: left;
+  transform: rotateY(calc(var(--enter, 0) * -110deg));
+}
+.door-right {
+  right: 0;
+  border-radius: 0 100px 0 0;
+  transform-origin: right;
+  transform: rotateY(calc(var(--enter, 0) * 110deg));
+}
+.portal-door:after {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 16px;
+  border-radius: 10px;
+  background: #8e7660;
+  top: 60%;
+}
+.door-left:after {
+  right: 8px;
+}
+.door-right:after {
+  left: 8px;
+}
+.portal-step {
+  position: absolute;
+  display: block;
+  left: -18px;
+  right: -18px;
+  height: 16px;
+  background: #e4c8a6;
+  border-bottom: 5px solid #c9a589;
+}
+.step-one {
+  bottom: -25px;
+}
+.step-two {
+  bottom: -41px;
+  left: -27px;
+  right: -27px;
+}
+.step-three {
+  bottom: -57px;
+  left: -37px;
+  right: -37px;
+}
+@keyframes cat-blink {
+  0%,
+  43%,
+  47%,
+  80%,
+  84%,
+  100% {
+    transform: scaleY(1);
+  }
+  45%,
+  82% {
+    transform: scaleY(0.07);
+  }
+}
+@keyframes tail-sway {
+  0%,
+  100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+}
+@keyframes cat-think {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+@keyframes paw-hello {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  50% {
+    transform: rotate(-20deg) translateY(-3px);
+  }
+}
+@media (min-width: 701px) {
+  .contact-panel {
+    text-align: left;
+    padding: 65px 8% 55px;
+    min-height: 445px;
+  }
+  .contact-panel > .eyebrow,
+  .contact-actions,
+  .contact-socials {
+    justify-content: flex-start;
+  }
+  .contact-panel h2,
+  .contact-panel > p {
+    max-width: 65%;
+  }
+}
+@media (max-width: 1100px) and (min-width: 701px) {
+  .contact-portal {
+    right: 9%;
+    width: 140px;
+    height: 215px;
+    top: 100px;
+  }
+  .contact-panel > .eyebrow {
+    font-size: 7px;
+  }
+  .contact-panel h2 {
+    font-size: 32px;
+  }
+}
+@media (max-width: 700px) {
+  .art-caption {
+    bottom: 4px;
+  }
+  .hero-art .scene {
+    transform: translateY(var(--hero-shift, 0px))
+      rotateZ(var(--hero-turn, 0deg));
+  }
+  .contact-panel {
+    padding-top: 300px;
+  }
+  .contact-portal {
+    right: calc(50% - 65px);
+    top: 35px;
+    width: 130px;
+    height: 195px;
+    border-width: 12px;
+    box-shadow: 12px -6px 0 #c4ad91;
+    transform: rotate(-6deg);
+  }
+  .portal-sky span {
+    font-size: 23px;
+    top: 24px;
+  }
+  .portal-sky i {
+    top: 65px;
+  }
+  .cat-portrait > span {
+    font-size: 6px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-art .scene,
+  .mini-sculpture,
+  .about-art .cat-portrait {
+    transform: none !important;
+  }
+  .portal-door {
+    transform: rotateY(-110deg);
+  }
+  .door-right {
+    transform: rotateY(110deg);
+  }
+}

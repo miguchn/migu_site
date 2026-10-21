@@ -1,0 +1,7 @@
+:root {
+  --sans: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --serif:
+    "Iowan Old Style", "Baskerville", "Songti SC", "Noto Serif CJK SC",
+    "SimSun", serif;
+  --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
