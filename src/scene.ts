@@ -52,6 +52,7 @@ export function island() {
   ${block(289, 308, 76, 74, 12, cream)}
   <g transform="translate(364 322) skewY(-26.565)"><path d="M0 58V21a16 16 0 0 1 32 0v37Z" fill="#8a6360"/><path d="M5 58V23a11 11 0 0 1 22 0v35" fill="#b48272"/></g>
   ${stairs(188, 402, 8, 15)}
+  <path class="stair-light" d="M217 409l15-7.5v-8l15-7.5v-8l15-7.5v-8l15-7.5v-8l15-7.5v-8l15-7.5v-8l15-7.5v-8" pathLength="260" stroke="#fff8d5" stroke-width="3" stroke-linecap="round" stroke-dasharray="10 250" opacity="0"/>
   ${block(177, 321, 43, 43, 20, green)}
   ${block(179, 218, 38, 38, 107, cream)}
   <g transform="translate(217 224) skewY(-26.565)"><path d="M0 63V26a14 14 0 0 1 28 0v37Z" fill="#a47867"/><path d="M5 63V28a9 9 0 0 1 18 0v35" fill="#d5a88e"/></g>
@@ -74,7 +75,7 @@ export function island() {
   <g class="scene-tree" transform="translate(531 389)"><path d="M0 0v-44" stroke="#6c8270" stroke-width="4"/><ellipse cy="-54" rx="19" ry="34" fill="#759c83"/><path d="M0-22v-42m0 24 10-12m-10-1-9-10" stroke="#527965" stroke-width="1.5"/></g>
   <g transform="translate(276 482)"><path d="M0 0v-30" stroke="#789181" stroke-width="3"/><circle cy="-36" r="18" fill="#aec1a0"/><circle cx="-6" cy="-44" r="14" fill="#bdd0ad"/></g>
   <g transform="translate(398 441)"><ellipse rx="21" ry="7" fill="#92b1a4"/><path d="M0 0v-16m0 5-9-7m9 3 8-10" stroke="#6a907c" stroke-width="2"/><path d="M-1-16q-17 0-11-9 12-2 11 9m2-7q-1-15 10-13 6 10-10 13" fill="#73977f"/></g>
-  <g id="scene-cat" transform="translate(340 373) scale(1.65)">${cat}</g>
+  <g id="scene-cat" transform="translate(340 373) scale(1.35)">${cat}</g>
   <g fill="#f2e6cf"><ellipse cx="436" cy="487" rx="15" ry="7"/><ellipse cx="464" cy="473" rx="8" ry="4"/><ellipse cx="164" cy="458" rx="8" ry="4"/></g>
   <g stroke="#698f80" opacity=".6"><path d="m240 518 12 6m-2-12 12 6m277-82 13 6"/></g>
   </g>

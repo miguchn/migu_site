@@ -10,7 +10,7 @@
   position: sticky;
   top: 0;
   overflow: hidden;
-  color: color-mix(in srgb, #314c46, #fff1d9 calc(var(--night, 0) * 100%));
+  color: color-mix(in srgb, #263e35, #fff1d9 calc(var(--copy-night, 0) * 100%));
 }
 .journey-wash {
   position: absolute;
@@ -110,7 +110,7 @@
   margin-bottom: 25px;
 }
 .chapter-copy h2 span {
-  color: color-mix(in srgb, #925d51, #f1d6b5 calc(var(--night, 0) * 100%));
+  color: color-mix(in srgb, #875348, #f1d6b5 calc(var(--copy-night, 0) * 100%));
   position: relative;
 }
 .chapter-copy h2 span:after {
@@ -158,7 +158,7 @@
   will-change: transform;
 }
 .journey-cat {
-  filter: drop-shadow(2px 3px 1px #28393222);
+  pointer-events: none;
 }
 .journey-cloud {
   opacity: 0.8;
@@ -357,8 +357,8 @@
     line-height: 1.9;
   }
   .journey-perspective {
-    left: -20%;
-    right: -24%;
+    left: -10%;
+    right: -10%;
     top: 30%;
     bottom: 7%;
     perspective: 900px;
