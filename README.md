@@ -9,3 +9,11 @@
 来小岛走走，向下滑动，跟着小黑进入奇想世界。
 
 **https://miguchn.com/**
+
+## 本地验证
+
+`npm run build` 生成包含正文的静态 HTML，并为 JSON-LD 生成匹配的 CSP hash。
+`npm test` 校验构建产物、交互输入和定时器状态；需先构建。
+`npm run preview` 预览 `dist/`，可直接点击小黑、拱门和昼夜按钮。
+
+部署时使用完整 `dist/`（包含生成的 `_headers`），不要只替换 HTML。

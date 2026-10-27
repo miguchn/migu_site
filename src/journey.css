@@ -53,6 +53,10 @@
   align-items: center;
   justify-content: space-between;
 }
+/* Leave the fixed summit pill a clear lane at the right edge. */
+.journey-bottom {
+  right: max(105px, 4%);
+}
 .journey-topline {
   top: 32px;
   font: 9px var(--mono);
@@ -160,6 +164,11 @@
 .journey-cat {
   pointer-events: none;
 }
+/* Temporary: keep the walking rig, but do not paint it or its shadow. */
+.journey-cat.is-hidden,
+.journey-cat-shadow.is-hidden {
+  visibility: hidden;
+}
 .journey-cloud {
   opacity: 0.8;
   animation: journey-cloud 14s ease-in-out infinite alternate;
@@ -220,7 +229,7 @@
   padding: 12px 19px;
   border-radius: 40px;
   background: #fbf4e92e;
-  border: 1px solid #42625830;
+  border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
   font-size: 11px;
   display: flex;
   gap: 8px;

@@ -1,4 +1,6 @@
 import { journeyStops } from "./journey";
+import { sampleGait, bonePath, walkLegs, type LegName } from "./cat-gait";
+export { sampleGait } from "./cat-gait";
 
 const clamp = (value: number, min = 0, max = 1) => Math.max(min, Math.min(max, value));
 const smooth = (value: number) => {
@@ -17,21 +19,9 @@ export function sampleJourney(progress: number) {
   const t = clamp((p - a.at) / (b.at - a.at));
   const travel = smooth(t);
   const moving = Math.hypot(b.x - a.x, b.y - a.y) > 0.1;
-  const hop = moving ? Math.sin(t * Math.PI) * b.lift : 0;
+  const hop = moving ? Math.sin(t * Math.PI) ** 2 * b.lift * 0.38 : 0;
   return { x: a.x + (b.x - a.x) * travel, y: a.y + (b.y - a.y) * travel,
     hop, t, moving, landing: moving ? Math.sin(range(t, 0.82, 1) * Math.PI) : 0 };
-}
-
-/** Four separate limbs, phased through a step; all return to rest at contact. */
-export function sampleGait(t: number, moving: boolean, facing: number) {
-  const phase = (facing > 0 ? t : 1 - t) * Math.PI * 2;
-  const envelope = moving ? Math.sin(clamp(t) * Math.PI) * 10 : 0;
-  const stride = Math.sin(phase) * envelope;
-  // Diagonal pairs move together like a soft trot; the far pair is quieter.
-  return { frontNear: stride,
-    backNear: -stride * .9,
-    frontFar: -stride * .72,
-    backFar: stride * .72 };
 }
 
 /** Finish the current step on idle, in the direction of travel. */
@@ -49,26 +39,71 @@ export function initMotion() {
   const bridgePivot = document.querySelector<SVGGElement>(".journey-bridge-pivot")!;
   const cat = document.querySelector<SVGGElement>(".journey-cat")!;
   const pose = cat.querySelector<SVGGElement>(".journey-cat-pose")!;
-  const front = cat.querySelector<SVGGElement>(".cat-leg-front")!;
-  const back = cat.querySelector<SVGGElement>(".cat-leg-back")!;
-  const frontFar = cat.querySelector<SVGGElement>(".cat-leg-front-far")!;
-  const backFar = cat.querySelector<SVGGElement>(".cat-leg-back-far")!;
-  const torso = cat.querySelector<SVGGElement>(".cat-walk-torso")!;
+  const body = cat.querySelector<SVGGElement>(".cat-body")!;
+  const head = cat.querySelector<SVGGElement>(".cat-head")!;
+  const tail = cat.querySelector<SVGGElement>(".cat-tail")!;
+  const limbs = Object.fromEntries((Object.keys(walkLegs) as LegName[]).map((name) => {
+    const leg = cat.querySelector<SVGGElement>(`[data-leg="${name}"]`)!;
+    return [name, { upper: leg.querySelector<SVGPathElement>(".cat-leg-upper")!,
+      lower: leg.querySelector<SVGPathElement>(".cat-leg-lower")!,
+      foot: cat.querySelector<SVGEllipseElement>(`[data-paw="${name}"]`)! }];
+  })) as Record<LegName, { upper: SVGPathElement; lower: SVGPathElement; foot: SVGEllipseElement }>;
   const shadow = document.querySelector<SVGEllipseElement>(".journey-cat-shadow")!;
   const pieces = [...document.querySelectorAll<SVGGElement>("[data-build]")]
     .map((el) => ({ el, values: el.dataset.build!.split(",").map(Number) }));
   const copies = [...document.querySelectorAll<HTMLElement>(".chapter-copy")];
   const chapterButtons = [...document.querySelectorAll<HTMLButtonElement>("[data-chapter]")];
   const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  const mobileJourney = matchMedia("(max-width: 700px)");
   if (location.hash || location.search) history.replaceState(null, "", location.pathname);
+  // Native smooth scrolling no-ops on some mobile browsers, and the old
+  // 24px gap left the journey title short of a full screen. Drive the scroll
+  // ourselves so the destination actually arrives.
+  let scrollAnimation = 0;
+  const root = document.documentElement;
+  let restoreScrollBehavior = () => {};
+  function stopScrollAnimation() {
+    cancelAnimationFrame(scrollAnimation);
+    restoreScrollBehavior();
+    removeEventListener("wheel", stopScrollAnimation);
+    removeEventListener("touchstart", stopScrollAnimation);
+  }
+  function scrollPageTo(top: number) {
+    stopScrollAnimation();
+    const previous = root.style.scrollBehavior;
+    root.style.scrollBehavior = "auto";
+    restoreScrollBehavior = () => {
+      root.style.scrollBehavior = previous;
+      restoreScrollBehavior = () => {};
+    };
+    if (reduceMotion.matches || Math.abs(top - scrollY) < 1) {
+      scrollTo(0, top);
+      restoreScrollBehavior();
+      return;
+    }
+    const start = scrollY;
+    const change = top - start;
+    const duration = Math.min(720, 280 + Math.abs(change) * 0.2);
+    const t0 = performance.now();
+    addEventListener("wheel", stopScrollAnimation, { passive: true });
+    addEventListener("touchstart", stopScrollAnimation, { passive: true });
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - t0) / duration);
+      const eased = t * t * (3 - 2 * t);
+      scrollTo(0, Math.round(start + change * eased));
+      if (t < 1) scrollAnimation = requestAnimationFrame(tick);
+      else stopScrollAnimation();
+    };
+    scrollAnimation = requestAnimationFrame(tick);
+  }
   document.querySelectorAll<HTMLAnchorElement>("a[data-scroll]").forEach((link) => {
     link.addEventListener("click", (event) => {
       const destination = link.dataset.scroll!;
       const target = document.getElementById(destination);
       if (!target) return;
       event.preventDefault();
-      scrollTo({ top: destination === "home" ? 0 : scrollY + target.getBoundingClientRect().top - 24,
-        behavior: reduceMotion.matches ? "instant" : "smooth" });
+      const top = scrollY + target.getBoundingClientRect().top;
+      scrollPageTo(destination === "home" ? 0 : destination === "journey" ? Math.ceil(top) : top - 24);
       if (destination === "main") target.focus({ preventScroll: true });
     });
   });
@@ -77,6 +112,7 @@ export function initMotion() {
   const ornaments = [...document.querySelectorAll<HTMLElement>(".project-card, .explore-item, .about-art, .contact-panel")];
   const entered = new Set<HTMLElement>();
   const percent = document.querySelector<HTMLElement>(".journey-percent")!;
+  const scrollHint = document.querySelector<HTMLElement>(".journey-scroll-hint")!;
   const summit = document.querySelector<HTMLAnchorElement>(".summit-link")!;
   const footer = document.querySelector<HTMLElement>(".footer")!;
   summit.hidden = false;
@@ -101,7 +137,6 @@ export function initMotion() {
     const p = clamp(-rect.top / distance);
     const reduced = reduceMotion.matches;
     const visible = rect.top < innerHeight && rect.bottom > 0;
-    document.body.classList.toggle("in-journey", rect.top <= 0 && rect.bottom >= innerHeight);
     if (Math.abs(p - previousProgress) > 0.00005) facing = p > previousProgress ? 1 : -1;
     previousProgress = p;
     if (visible || activeChapter === -1 || reduced) {
@@ -114,6 +149,8 @@ export function initMotion() {
       stage.style.setProperty("--orb-x", `${(p - 0.5) * 50}px`);
       stage.style.setProperty("--orb-y", `${Math.sin(p * Math.PI) * -25}px`);
       percent.textContent = String(Math.round(p * 100)).padStart(2, "0");
+      // The world stops responding at the end of the route, so does its hint.
+      scrollHint.style.opacity = String(1 - range(p, 0.93, 0.99));
       // The isometric architecture already supplies the perspective. Keep its horizon stable.
       world.style.transform = reduced ? "none" : `translate3d(0,${range(p, 0.65, 1) * -8}px,0)`;
       for (const { el, values: [start, end, x, y] } of pieces) {
@@ -130,23 +167,38 @@ export function initMotion() {
       else catProgress += (target - catProgress) * (1 - Math.exp(-dt / 65));
       if (Math.abs(target - catProgress) < 0.00003) catProgress = target;
       const at = sampleJourney(catProgress);
-      const gait = sampleGait(at.t, at.moving, facing);
-      cat.setAttribute("transform", `translate(${at.x} ${at.y - at.hop}) scale(1.05)`);
+      const breath = reduced ? 0 : Math.sin(now / 1100) * .08;
+      const gait = sampleGait(at.t, !reduced && at.moving, facing, breath);
+      // Route coordinates stay intact. Only the body bobs; supporting paws compensate.
+      cat.setAttribute("transform", `translate(${at.x} ${at.y}) scale(${mobileJourney.matches ? 1.16 : 1.05})`);
       pose.setAttribute("transform", `scale(${facing} 1)`);
-      front.setAttribute("transform", `rotate(${gait.frontNear} 10 -16)`);
-      back.setAttribute("transform", `rotate(${gait.backNear} -11 -15)`);
-      frontFar.setAttribute("transform", `rotate(${gait.frontFar} 17 -17)`);
-      backFar.setAttribute("transform", `rotate(${gait.backFar} -6 -17)`);
-      torso.setAttribute("transform", `rotate(${at.moving ? Math.sin(at.t * Math.PI) * -1.2 : 0} 0 -14)`);
-      shadow.setAttribute("transform", `translate(${at.x} ${at.y}) scale(${1 - at.hop * 0.025} 1)`);
-      shadow.style.opacity = String(0.18 - at.hop * 0.012);
-      const chapterTwo = range(p, 0.31, 0.39);
-      const chapterThree = range(p, 0.66, 0.74);
+      body.setAttribute("transform", `translate(0 ${-gait.bob})`);
+      for (const name of Object.keys(walkLegs) as LegName[]) {
+        const limb = limbs[name], leg = gait.legs[name];
+        limb.upper.setAttribute("d", bonePath(leg.hip, leg.knee));
+        limb.lower.setAttribute("d", bonePath(leg.knee, leg.ankle));
+        limb.foot.setAttribute("cx", String(leg.foot.x));
+        limb.foot.setAttribute("cy", String(leg.foot.y - 1.4));
+      }
+      head.setAttribute("transform", `rotate(${gait.nod} 7 -16)`);
+      const tailRest = reduced ? 0 : Math.sin(now / 1000) * 1.5;
+      tail.setAttribute("transform", `rotate(${gait.tail + tailRest} -11 -10)`);
+      shadow.setAttribute("transform", `translate(${at.x} ${at.y}) scale(${1 - Math.max(0, gait.bob) * .03} 1)`);
+      shadow.style.opacity = ".18";
+      // Chapters hand off sequentially: each text fully leaves before the next
+      // enters, so the two big headlines never overlap mid-transition.
+      const outOne = range(p, 0.29, 0.35);
+      const inTwo = range(p, 0.36, 0.42);
+      const outTwo = range(p, 0.63, 0.69);
+      const inThree = range(p, 0.7, 0.76);
+      const chapters = [
+        { opacity: 1 - outOne, offset: -outOne * 12 },
+        { opacity: inTwo * (1 - outTwo), offset: (1 - inTwo - outTwo) * 12 },
+        { opacity: inThree, offset: (1 - inThree) * 12 },
+      ];
       copies.forEach((copy, index) => {
-        const opacity = reduced ? Number(index === phase) : index === 0 ? 1 - chapterTwo
-          : index === 1 ? chapterTwo * (1 - chapterThree) : chapterThree;
-        const offset = index === 0 ? -chapterTwo * 12
-          : index === 1 ? (1 - chapterTwo - chapterThree) * 12 : (1 - chapterThree) * 12;
+        const opacity = reduced ? Number(index === phase) : chapters[index].opacity;
+        const offset = chapters[index].offset;
         copy.style.opacity = String(opacity);
         copy.style.transform = reduced ? "none" : `translateY(${offset}px)`;
         copy.setAttribute("aria-hidden", String(!reduced && index !== phase));
@@ -158,7 +210,7 @@ export function initMotion() {
         });
         activeChapter = phase;
       }
-      if (!reduced && (scrolling || catProgress !== target)) requestUpdate();
+      if (!reduced && (visible || scrolling || catProgress !== target)) requestUpdate();
     } else {
       // Resuming an off-screen scene should not replay the whole route.
       catProgress = p;
@@ -193,8 +245,7 @@ export function initMotion() {
   });
   chapterButtons.forEach((button, index) => button.addEventListener("click", () => {
     const positions = [0.13, 0.54, 0.99];
-    scrollTo({ top: scrollY + section.getBoundingClientRect().top + (section.offsetHeight - innerHeight) * positions[index],
-      behavior: reduceMotion.matches ? "instant" : "smooth" });
+    scrollPageTo(scrollY + section.getBoundingClientRect().top + (section.offsetHeight - innerHeight) * positions[index]);
   }));
   if (matchMedia("(hover: hover) and (pointer: fine)").matches) {
     hero.addEventListener("pointermove", (event) => {

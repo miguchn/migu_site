@@ -55,9 +55,9 @@
   transform-origin: 11px -4px;
   animation: tail-sway 4s ease-in-out infinite;
 }
-.cat-walking .cat-tail {
-  transform-origin: -13px -17px;
-  animation-duration: 3.2s;
+.cat-walking .cat-tail,
+.cat-walking .cat-tail-sway {
+  animation: none;
 }
 .cat-portrait .cat-head {
   transform-box: fill-box;
@@ -383,7 +383,6 @@
 .summit-link[hidden] { display: none; }
 .summit-link.is-visible { opacity: 1; visibility: visible; transform: translateY(0); }
 .summit-link svg { width: 31px; height: 39px; }
-.in-journey .summit-link { bottom: 102px; }
 @keyframes cue-drift { 0%,100% { transform: translateY(-2px); } 50% { transform: translateY(4px); } }
 @media (min-width: 701px) {
   .hero {
@@ -449,4 +448,134 @@
     right: -8%;
     opacity: .42;
   }
+}
+
+/* Discoverable details live inside the existing illustration. */
+.island-hotspot { cursor: pointer; outline: none; }
+/* Invisible hit areas: pointer interaction never draws a frame on the artwork. */
+.hotspot-focus { fill: transparent; stroke: none; pointer-events: all; }
+/* Keyboard users get feedback on the character itself, without a bounding box. */
+.island-hotspot:focus-visible .cat-body { filter: drop-shadow(0 0 3px #d6b77a); }
+.scene:has(#island-door:focus-visible) #island-door-art { filter: brightness(1.12); }
+.cat-speech { overflow: visible; }
+#cat-speech {
+  width: fit-content;
+  max-width: 275px;
+  margin: 6px auto 0;
+  padding: 10px 14px;
+  border: 1px solid #dedfcd;
+  border-radius: 14px 14px 14px 3px;
+  background: #fffdf4f5;
+  color: #43564b;
+  font: 16px/1.5 "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  text-align: center;
+  box-shadow: 0 5px 15px #43564b0a;
+}
+#cat-speech:empty { display: none; }
+#scene-cat .cat-head {
+  transform-box: fill-box;
+  transform-origin: 50% 90%;
+  transition: transform .6s ease;
+}
+.cat-stargazing #scene-cat .cat-head { transform: rotate(-10deg) translateY(-2px); }
+#scene-cat[data-pose="wave"] .cat-paw {
+  transform-box: fill-box;
+  transform-origin: 50% 10%;
+  animation: island-wave .7s ease-in-out 2;
+}
+#scene-cat[data-pose="tilt"] .cat-head { animation: island-tilt 1.8s ease-in-out; }
+#scene-cat[data-pose="stretch"] .cat-body {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: island-stretch 1.8s ease-in-out;
+}
+.scene-stars { opacity: .35; transition: opacity .9s ease, stroke .9s ease; }
+.night .scene-stars { opacity: 1; stroke: #ffedbf; transition-delay: .65s; }
+.scene-window { transition: fill .8s ease; }
+.night .window-one { fill: #ffe4a0; transition-delay: .3s; }
+.night .window-two { fill: #ffe4a0; transition-delay: .6s; }
+.island-door-leaf, .door-handle {
+  transform-box: view-box;
+  transform-origin: 5px 40px;
+  transition: transform .65s ease, fill .8s ease;
+}
+.door-light { opacity: .15; transition: opacity .65s ease; }
+.night .door-light { opacity: 1; transition-delay: .45s; }
+.night .island-door-leaf { fill: #d5ac78; transition-delay: .45s; }
+.door-open #island-door-art .door-light { opacity: 1; transition-delay: 0s; }
+.door-open #island-door-art :is(.island-door-leaf, .door-handle) { transform: scaleX(.08); }
+@keyframes island-wave {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  45% { transform: translateY(-10px) rotate(-25deg); }
+}
+@keyframes island-tilt {
+  0%, 100% { transform: rotate(0deg); }
+  35%, 65% { transform: rotate(12deg); }
+}
+@keyframes island-stretch {
+  0%, 100% { transform: scale(1); }
+  45% { transform: scale(1.08, .88); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #scene :is(.cat-head, .scene-stars, .scene-window, .island-door-leaf, .door-handle, .door-light, .scene-sun, .scene-moon, .floating-island) {
+    transition: none !important;
+    transition-delay: 0s !important;
+    animation: none !important;
+  }
+  .cat-stargazing #scene-cat .cat-head { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene::before { transition: none; }
+}
+
+/* Small screens keep controls and feedback out of the illustration. */
+.scene-controls .door-control, .island-feedback { display: none; }
+@media (max-width: 700px) {
+  .hero-art {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: auto;
+    aspect-ratio: auto;
+    margin-inline: 0;
+    overflow: visible;
+  }
+  .hero-art .scene { height: auto; aspect-ratio: 760 / 690; flex: none; }
+  .hero-art .scene-label, .hero-art .cat-speech, .hero-art .art-coordinates { display: none; }
+  .hero-art .scene-controls {
+    position: static;
+    transform: none;
+    margin: -6px auto 0;
+    padding: 5px;
+    gap: 10px;
+    flex: none;
+  }
+  .hero-art .scene-controls button { width: 44px; height: 44px; padding: 10px; }
+  .hero-art .scene-controls button svg { width: 23px; height: 23px; }
+  .scene-controls .door-control { display: grid; }
+  .island-feedback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
+    height: 3.4em;
+    margin: 8px 0 0;
+    padding-inline: 4px;
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: center;
+    color: var(--muted);
+  }
+  .hero-art .art-caption {
+    position: static;
+    transform: none;
+    margin: 8px 0 22px;
+    white-space: normal;
+    font-size: 11px;
+    line-height: 1.7;
+  }
+  .hero-art .art-caption .desktop-island-hint { display: none; }
+  /* The separate 44px door control leaves the cat's whole hit area available. */
+  #island-door, #island-door * { pointer-events: none; }
 }

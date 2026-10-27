@@ -1,6 +1,10 @@
 import { block } from "./scene";
 import { catWalk } from "./cat";
 
+/** The walking cat stays in the scene. Set true to show it on the monument again. */
+const showWalkingCat = false;
+const walkingCatState = showWalkingCat ? "" : " is-hidden";
+
 const stone = ["#ffeed9", "#e5b8a0", "#c68c7d"];
 const sage = ["#bfceb6", "#8fab98", "#688f81"];
 const rose = ["#f4c4b9", "#d99c94", "#b97e7d"];
@@ -78,8 +82,8 @@ export function journeyScene() {
     ${upperSteps}
     ${build(block(roofLanding.x, roofLanding.y, roofLanding.w, roofLanding.d, 6, stone), 0.51, 0.64, 0, -20)}
     <g class="journey-garden">${build(`<path d="M222 601v-63" stroke="#6b8b75" stroke-width="5"/><ellipse cx="222" cy="516" rx="28" ry="43" fill="#83a58a"/><path d="M222 546v-53m0 30-12-15m12 2 13-16" stroke="#648872" stroke-width="2"/>`, 0.02, 0.18, -12, 20)}${build(`<path d="M855 460v-62" stroke="#6b8b75" stroke-width="5"/><ellipse cx="855" cy="379" rx="25" ry="42" fill="#93af91"/><path d="M855 420v-61" stroke="#648872" stroke-width="2"/>`, 0.28, 0.46, 12, 25)}</g>
-    <ellipse class="journey-cat-shadow" cx="0" cy="1" rx="20" ry="4" fill="#314c46" opacity=".18" transform="translate(${start.x} ${start.y})"/>
-    <g class="journey-cat" transform="translate(${start.x} ${start.y}) scale(1.05)"><g class="journey-cat-pose">${catWalk}</g></g>
+    <ellipse class="journey-cat-shadow${walkingCatState}" cx="0" cy="1.2" rx="13" ry="2.6" fill="#314c46" opacity=".2" transform="translate(${start.x} ${start.y})"/>
+    <g class="journey-cat${walkingCatState}" transform="translate(${start.x} ${start.y}) scale(1.05)"><g class="journey-cat-pose">${catWalk}</g></g>
     <g class="journey-satellite">${block(835, 594, 36, 38, 35, rose)}</g>
     <g class="journey-satellite satellite-two">${block(130, 380, 26, 27, 26, sage)}</g>
     <path d="m545 643 18 9 18-9-18-9Z" fill="#f9e9cc"/><path d="m580 625 11 5 11-5-11-5Z" fill="#f9e9cc"/>
@@ -87,15 +91,15 @@ export function journeyScene() {
 }
 
 export function journeySection() {
-  return `<section class="journey-section" id="journey" aria-label="陪小黑走到楼顶">
+  return `<section class="journey-section" id="journey" aria-label="小黑的奇想漫游">
     <div class="journey-stage">
       <div class="journey-wash wash-dawn"></div><div class="journey-wash wash-dusk"></div><div class="journey-wash wash-night"></div>
       <div class="journey-orb"></div><div class="journey-stars" aria-hidden="true">✦ <span>✧</span> · <i>✦</i></div>
       <div class="journey-topline"><span>A WALK THROUGH THE IMPOSSIBLE</span><span>小黑的奇想漫游 / <b class="journey-percent">00</b>%</span></div>
       <div class="journey-copy">
         <article class="chapter-copy" data-copy="0"><p class="chapter-kicker">CHAPTER 01 — 保持好奇</p><h2>还没有路，<br/>那就<span>搭一条。</span></h2><p>每个有趣的东西，都从一个「要不试试」开始。<br/>继续向下，让散落的灵感长成阶梯。</p></article>
-        <article class="chapter-copy" data-copy="1" aria-hidden="true"><p class="chapter-kicker">CHAPTER 02 — 换个角度</p><h2>转个方向，<br/>就有<span>新可能。</span></h2><p>转动的不是世界，是看世界的方式。<br/>让好奇心，连接两个不可能的地方。</p></article>
-        <article class="chapter-copy" data-copy="2" aria-hidden="true"><p class="chapter-kicker">CHAPTER 03 — 创造与分享</p><h2>让不可能，<br/><span>变成作品。</span></h2><p>从一次尝试，到一个真正可用的作品。<br/>把路上的发现留下，也分享给下一个好奇的人。</p></article>
+        <article class="chapter-copy" data-copy="1"><p class="chapter-kicker">CHAPTER 02 — 换个角度</p><h2>转个方向，<br/>就有<span>新可能。</span></h2><p>转动的不是世界，是看世界的方式。<br/>让好奇心，连接两个不可能的地方。</p></article>
+        <article class="chapter-copy" data-copy="2"><p class="chapter-kicker">CHAPTER 03 — 创造与分享</p><h2>让不可能，<br/><span>变成作品。</span></h2><p>从一次尝试，到一个真正可用的作品。<br/>把路上的发现留下，也分享给下一个好奇的人。</p></article>
       </div>
       <div class="journey-perspective"><div class="journey-world">${journeyScene()}</div></div>
       <div class="journey-bottom"><span class="journey-scroll-hint"><span>↓</span> 向下滚动，世界随你而动</span><div class="journey-chapters" role="group" aria-label="漫游章节"><button class="active" data-chapter="0" aria-pressed="true"><span>01</span> 起点</button><button data-chapter="1" aria-pressed="false"><span>02</span> 转念</button><button data-chapter="2" aria-pressed="false"><span>03</span> 创造</button></div></div>
