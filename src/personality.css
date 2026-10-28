@@ -587,11 +587,13 @@
 .language-switch button:hover { background: #e9ede4; }
 .header .desktop-nav { margin-right: 12px; }
 html[lang="en"] { --sans: system-ui, -apple-system, sans-serif; }
-html[lang="en"] .hero h1 { font-size: clamp(46px, 5.1vw, 76px); letter-spacing: -2px; line-height: 1.12; }
-html[lang="en"] .hero-title-line:last-child { max-width: 7.5em; }
+html[lang="en"] .hero h1 { font-size: clamp(30px, 11.5cqi, 68px); letter-spacing: -2px; line-height: 1.12; }
 html[lang="en"] .chapter-copy h2 { font-size: clamp(32px, 4.1vw, 60px); line-height: 1.15; }
 html[lang="en"] .chapter-copy > p:last-child { max-width: 38em; }
 html[lang="en"] .brand { letter-spacing: 0; }
+/* Keep both English headline lines intact at phone, tablet and desktop widths. */
+html[lang="en"] .hero-copy { container-type: inline-size; }
+html[lang="en"] .hero-title-line { white-space: nowrap; }
 @media (max-width: 1000px) and (min-width: 701px) {
   .header { gap: 12px; }
   .header .desktop-nav { gap: 18px; margin-right: 0; }
@@ -603,6 +605,5 @@ html[lang="en"] .brand { letter-spacing: 0; }
   .header .menu-toggle { flex: none; }
   html[lang="en"] .brand { font-size: 13px; }
   html[lang="en"] .brand-sub { letter-spacing: .8px; }
-  html[lang="en"] .hero h1 { font-size: clamp(44px, 10.5vw, 68px); }
   html[lang="en"] .chapter-copy h2 { font-size: clamp(30px, 7.5vw, 44px); }
 }
