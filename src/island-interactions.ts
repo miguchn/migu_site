@@ -1,3 +1,4 @@
+import { translate } from "./i18n";
 /** Small discoveries, with a single predictable feedback location on phones. */
 export function initIslandInteractions(notify: (message: string) => void) {
   const scene = document.querySelector<HTMLElement>("#scene")!;
@@ -27,8 +28,8 @@ export function initIslandInteractions(notify: (message: string) => void) {
   }
   function showFeedback(message: string) {
     clearTimeout(feedbackTimer);
-    feedback.textContent = message;
-    feedbackTimer = setTimeout(() => { feedback.textContent = defaultFeedback(); }, 3000);
+    feedback.textContent = translate(message);
+    feedbackTimer = setTimeout(() => { feedback.textContent = translate(defaultFeedback()); }, 3000);
   }
   function clearGreeting() {
     delete cat.dataset.pose;
@@ -40,7 +41,7 @@ export function initIslandInteractions(notify: (message: string) => void) {
     const greeting = greetings[greetingIndex++ % greetings.length];
     cat.dataset.pose = greeting.pose;
     scene.closest(".hero-art")!.classList.add("is-greeting");
-    speech.textContent = mobile.matches ? "" : greeting.text;
+    speech.textContent = mobile.matches ? "" : translate(greeting.text);
     showFeedback(greeting.text);
     clearTimeout(greetingTimer);
     greetingTimer = setTimeout(clearGreeting, 2600);
@@ -56,7 +57,7 @@ export function initIslandInteractions(notify: (message: string) => void) {
   function toggleDoor() {
     const open = door.getAttribute("aria-pressed") !== "true";
     scene.classList.toggle("door-open", open);
-    const label = open ? "关上小岛的门" : "打开小岛的门";
+    const label = translate(open ? "关上小岛的门" : "打开小岛的门");
     for (const control of [door, doorButton]) {
       control.setAttribute("aria-pressed", String(open));
       control.setAttribute("aria-label", label);
@@ -71,7 +72,7 @@ export function initIslandInteractions(notify: (message: string) => void) {
     door.setAttribute("aria-hidden", String(mobile.matches));
     speech.textContent = "";
     clearTimeout(feedbackTimer);
-    feedback.textContent = defaultFeedback();
+    feedback.textContent = translate(defaultFeedback());
   }
   activateWithKeyboard(cat, greet);
   document.querySelector<HTMLButtonElement>("#cat-button")!.addEventListener("click", greet);
@@ -83,10 +84,10 @@ export function initIslandInteractions(notify: (message: string) => void) {
   themeButton.addEventListener("click", () => {
     const night = scene.classList.toggle("night");
     themeButton.setAttribute("aria-pressed", String(night));
-    const label = night ? "切换到小岛日景" : "切换到小岛夜景";
+    const label = translate(night ? "切换到小岛日景" : "切换到小岛夜景");
     themeButton.setAttribute("aria-label", label);
     themeButton.title = label;
-    caption.textContent = night ? "晚安，宇宙。好奇心还醒着。" : "在不可能的地方，发现可能。";
+    caption.textContent = translate(night ? "晚安，宇宙。好奇心还醒着。" : "在不可能的地方，发现可能。");
     speech.textContent = "";
     showFeedback(caption.textContent!);
     clearTimeout(nightTimer);

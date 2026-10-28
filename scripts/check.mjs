@@ -61,6 +61,7 @@ const source = await readFile(new URL("../src/island-interactions.ts", import.me
 const { code } = await transformWithEsbuild(source, "island-interactions.ts", { loader: "ts", format: "cjs" });
 const sandbox = {
   exports: {}, module: { exports: {} },
+  require: () => ({ translate: (message) => message }),
   document: { querySelector: (selector) => elements.get(selector) },
   matchMedia: (query) => query.includes("max-width") ? mobile : reduced,
   setTimeout: (fn, delay) => { timers.set(++timerId, { fn, delay }); return timerId; },
@@ -143,6 +144,14 @@ console.log("PASS: mobile feedback races, restoration, synchronized door control
 const { createServer } = await import("vite");
 const server = await createServer({ configFile: false, server: { middlewareMode: true }, appType: "custom" });
 try {
+  const { translate } = await server.ssrLoadModule("/src/i18n.ts");
+  const { renderPage } = await server.ssrLoadModule("/src/page.ts");
+  const english = translate(renderPage(), "en");
+  const remaining = english.replace(/<div class="language-switch"[\s\S]*?<\/div>/, "").match(/[\u3400-\u9fff]+/g);
+  assert.equal(remaining, null, `Untranslated page text: ${remaining}`);
+  assert.ok(english.includes("Curiosity"));
+  assert.ok(english.includes("I’m Xiaohei"));
+  console.log("PASS: English coverage for page, chapters, SVG labels and controls");
   const { journeyStops } = await server.ssrLoadModule("/src/journey.ts");
   const { sampleJourney, sampleGait, restingProgress } = await server.ssrLoadModule("/src/motion.ts");
   for (const stop of journeyStops) {

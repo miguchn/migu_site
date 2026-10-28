@@ -44,6 +44,7 @@ export function renderPage() {
   <header class="header wrap">
     <a class="brand" href="/" data-scroll="home" aria-label="咪咕看见小黑，回到首页"><img class="brand-mark" src="/logo.svg" width="48" height="48" alt="" /><span>咪咕看见小黑<span class="brand-sub">A CURIOUS LITTLE CORNER</span></span></a>
     <nav class="desktop-nav" aria-label="主导航"><a href="/" data-scroll="explore">探索方向</a><a href="/" data-scroll="projects">我的作品</a><a href="/" data-scroll="about">关于我</a></nav>
+    <div class="language-switch" role="group" aria-label="Language / 语言"><button type="button" data-locale="zh" lang="zh-CN" aria-label="切换到中文" aria-pressed="true">中文</button><span aria-hidden="true">/</span><button type="button" data-locale="en" lang="en" aria-label="Switch to English" aria-pressed="false">EN</button></div>
     <a class="nav-contact" href="/" data-scroll="contact">打个招呼</a>
     <button class="menu-toggle" aria-label="打开导航菜单" aria-expanded="false" aria-controls="mobile-nav"><span></span><span></span></button>
     <nav id="mobile-nav" class="mobile-nav" aria-label="移动端导航" hidden><a href="/" data-scroll="explore">探索方向</a><a href="/" data-scroll="projects">我的作品</a><a href="/" data-scroll="about">关于我</a><a href="/" data-scroll="contact">打个招呼</a></nav>

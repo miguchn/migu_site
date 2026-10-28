@@ -1,3 +1,4 @@
+import { initLocale, translate } from "./i18n";
 import "./style.css";
 import "./personality.css";
 import { renderPage } from "./page";
@@ -11,7 +12,7 @@ if (!app.querySelector("#main")) app.innerHTML = renderPage();
 const toast = document.querySelector<HTMLDivElement>(".toast")!;
 let toastTimer: ReturnType<typeof setTimeout>;
 function notify(message: string) {
-  toast.textContent = message;
+  toast.textContent = translate(message);
   toast.classList.add("visible");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toast.classList.remove("visible"), 3000);
@@ -30,14 +31,14 @@ const mobileNav = document.querySelector<HTMLElement>("#mobile-nav")!;
 function closeMenu() {
   mobileNav.hidden = true;
   menuButton.setAttribute("aria-expanded", "false");
-  menuButton.setAttribute("aria-label", "打开导航菜单");
+  menuButton.setAttribute("aria-label", translate("打开导航菜单"));
 }
 menuButton.addEventListener("click", () => {
   const expanded = menuButton.getAttribute("aria-expanded") !== "true";
   menuButton.setAttribute("aria-expanded", String(expanded));
   menuButton.setAttribute(
     "aria-label",
-    expanded ? "关闭导航菜单" : "打开导航菜单",
+    translate(expanded ? "关闭导航菜单" : "打开导航菜单"),
   );
   mobileNav.hidden = !expanded;
 });
@@ -82,3 +83,5 @@ if (
 }
 
 initMotion();
+
+initLocale();
