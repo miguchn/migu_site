@@ -102,10 +102,10 @@ button:focus-visible {
   font-weight: 600;
   letter-spacing: 1px;
 }
-.brand-cat {
-  width: 47px;
-  height: 47px;
-  overflow: visible;
+.brand-mark {
+  width: 48px;
+  height: 48px;
+  flex: none;
 }
 .brand-sub {
   display: block;
@@ -150,9 +150,6 @@ button:focus-visible {
 }
 .nav-contact:hover {
   background: #e9ede4;
-}
-.nav-contact span {
-  font-size: 19px;
 }
 .menu-toggle,
 .mobile-nav {
@@ -619,22 +616,6 @@ h2 {
   color: #5f6c5a;
   z-index: 1;
 }
-.project-open {
-  position: absolute;
-  bottom: 17px;
-  right: 18px;
-  display: grid;
-  place-items: center;
-  width: 29px;
-  height: 29px;
-  border: 1px solid #65755944;
-  border-radius: 50%;
-  color: #5f755e;
-}
-.project-open svg {
-  width: 16px;
-  height: 16px;
-}
 .project-details {
   padding: 22px 2px 0;
 }
@@ -826,10 +807,6 @@ h2 {
   border-bottom: 1px solid #8c9b7d;
   padding-bottom: 10px;
 }
-.email-link > svg {
-  width: 22px;
-  height: 22px;
-}
 .copy-email {
   background: transparent;
   padding: 8px;
@@ -863,10 +840,6 @@ h2 {
   width: 15px;
   height: 15px;
 }
-.contact-socials a > svg:last-child {
-  width: 12px;
-  height: 12px;
-}
 .x-icon {
   font-size: 17px;
   line-height: 1;
@@ -879,10 +852,18 @@ h2 {
   gap: 20px;
 }
 .footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-size: 12px;
   letter-spacing: 1px;
 }
-.footer-brand span {
+.footer-mark {
+  flex: none;
+  width: 36px;
+  height: 36px;
+}
+.footer-note {
   display: block;
   font-size: 9px;
   margin-top: 7px;
@@ -1073,8 +1054,9 @@ h2 {
   .brand-sub {
     font-size: 7px;
   }
-  .brand-cat {
-    width: 39px;
+  .brand-mark {
+    width: 40px;
+    height: 40px;
   }
   .desktop-nav {
     gap: 20px;
@@ -1228,8 +1210,8 @@ h2 {
     font-size: 15px;
     gap: 7px;
   }
-  .brand-cat {
-    width: 38px;
+  .brand-mark {
+    width: 40px;
     height: 40px;
   }
   .brand-sub {
@@ -1568,10 +1550,6 @@ h2 {
     font-size: 21px;
     gap: 12px;
   }
-  .email-link > svg {
-    width: 20px;
-    height: 20px;
-  }
   .copy-email {
     padding: 8px;
   }
@@ -1588,7 +1566,7 @@ h2 {
   .footer-brand {
     font-size: 11px;
   }
-  .footer-brand span {
+  .footer-note {
     font-size: 8px;
   }
   .footer > span {
