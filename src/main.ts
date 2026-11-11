@@ -4,6 +4,10 @@ import "./personality.css";
 import { renderPage } from "./page";
 import { initMotion } from "./motion";
 import { initIslandInteractions } from "./island-interactions";
+import { initBrandIntro } from "./brand-intro";
+import { initContentMotion } from "./content-motion";
+import "./brand-intro.css";
+import "./content-motion.css";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 // The production HTML already contains the page; only dev needs client rendering.
@@ -58,30 +62,8 @@ window.matchMedia("(min-width: 701px)").addEventListener("change", (e) => {
   if (e.matches) closeMenu();
 });
 
-if (
-  "IntersectionObserver" in window &&
-  !window.matchMedia("(prefers-reduced-motion: reduce)").matches
-) {
-  const observer = new IntersectionObserver(
-    (entries) =>
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("revealed");
-          observer.unobserve(entry.target);
-        }
-      }),
-    { threshold: 0.08 },
-  );
-  document
-    .querySelectorAll(
-      ".section-heading, .explore-item, .project-card, .about-copy, .contact-panel",
-    )
-    .forEach((el) => {
-      el.classList.add("reveal");
-      observer.observe(el);
-    });
-}
-
-initMotion();
-
 initLocale();
+document.body.classList.add("motion-ready");
+initMotion();
+initContentMotion();
+initBrandIntro();

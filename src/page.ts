@@ -1,6 +1,7 @@
 import { island, miniScene, cat } from "./scene";
 import { catPortrait } from "./cat";
 import { journeySection } from "./journey";
+import { brandIntroMarkup } from "./brand-intro";
 
 const arrow =
   '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -41,13 +42,14 @@ const projects = [
 
 export function renderPage() {
   return `
+  ${brandIntroMarkup()}
   <header class="header wrap">
-    <a class="brand" href="/" data-scroll="home" aria-label="咪咕看见小黑，回到首页"><img class="brand-mark" src="/logo.svg" width="48" height="48" alt="" /><span>咪咕看见小黑<span class="brand-sub">A CURIOUS LITTLE CORNER</span></span></a>
-    <nav class="desktop-nav" aria-label="主导航"><a href="/" data-scroll="explore">探索方向</a><a href="/" data-scroll="projects">我的作品</a><a href="/" data-scroll="about">关于我</a></nav>
+    <a class="brand" href="#home" data-scroll="home" aria-label="咪咕看见小黑，回到首页"><img class="brand-mark" src="/logo.svg" width="48" height="48" alt="" /><span>咪咕看见小黑<span class="brand-sub">A CURIOUS LITTLE CORNER</span></span></a>
+    <nav class="desktop-nav" aria-label="主导航"><a href="#explore" data-scroll="explore">探索方向</a><a href="#projects" data-scroll="projects">我的作品</a><a href="#about" data-scroll="about">关于我</a></nav>
     <div class="language-switch" role="group" aria-label="Language / 语言"><button type="button" data-locale="zh" lang="zh-CN" aria-label="切换到中文" aria-pressed="true">中文</button><span aria-hidden="true">/</span><button type="button" data-locale="en" lang="en" aria-label="Switch to English" aria-pressed="false">EN</button></div>
-    <a class="nav-contact" href="/" data-scroll="contact">打个招呼</a>
+    <a class="nav-contact" href="#contact" data-scroll="contact">打个招呼</a>
     <button class="menu-toggle" aria-label="打开导航菜单" aria-expanded="false" aria-controls="mobile-nav"><span></span><span></span></button>
-    <nav id="mobile-nav" class="mobile-nav" aria-label="移动端导航" hidden><a href="/" data-scroll="explore">探索方向</a><a href="/" data-scroll="projects">我的作品</a><a href="/" data-scroll="about">关于我</a><a href="/" data-scroll="contact">打个招呼</a></nav>
+    <nav id="mobile-nav" class="mobile-nav" aria-label="移动端导航" hidden><a href="#explore" data-scroll="explore">探索方向</a><a href="#projects" data-scroll="projects">我的作品</a><a href="#about" data-scroll="about">关于我</a><a href="#contact" data-scroll="contact">打个招呼</a></nav>
   </header>
   <main id="main" tabindex="-1">
     <section class="hero wrap" id="home" aria-labelledby="hero-title">
@@ -56,8 +58,8 @@ export function renderPage() {
         <h1 id="hero-title"><span class="hero-title-line">好奇心，</span><span class="hero-title-line">没有<span class="title-mark">边界<svg viewBox="0 0 220 15" aria-hidden="true"><path d="M3 11Q110-3 216 6" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/></svg></span>。</span></h1>
         <p class="hero-english">A curious mind. A different path.</p>
         <p class="hero-description">把 AI、代码和奇思妙想，做成能用、也好玩的作品。<br/>这里没有标准路线，跟着好奇心往前走就好。</p>
-        <div class="hero-actions"><a class="button button-dark" href="/" data-scroll="journey">开始漫游 ${arrow}</a><a class="text-link" href="/" data-scroll="projects">看看作品</a></div>
-        <a class="hero-scroll-cue" href="/" data-scroll="journey"><span class="cue-line" aria-hidden="true"></span><span>向下滑动，进入奇想世界</span><span class="cue-arrow" aria-hidden="true">↓</span></a><div class="hero-note"><span class="tiny-spark">✳</span> 探索 AI 科技，分享无限乐趣</div>
+        <div class="hero-actions"><a class="button button-dark" href="#journey" data-scroll="journey">开始漫游 ${arrow}</a><a class="text-link" href="#projects" data-scroll="projects">看看作品</a></div>
+        <a class="hero-scroll-cue" href="#journey" data-scroll="journey"><span class="cue-line" aria-hidden="true"></span><span>向下滑动，进入奇想世界</span><span class="cue-arrow" aria-hidden="true">↓</span></a><div class="hero-note"><span class="tiny-spark">✳</span> 探索 AI 科技，分享无限乐趣</div>
       </div>
       <div class="hero-art">
         <span class="art-coordinates">IMAGINATION IS A PLACE.</span>
@@ -68,7 +70,7 @@ export function renderPage() {
         <span class="art-caption">方向不必一样，好奇心可以同路。<span class="desktop-island-hint">点点小黑，也试试小岛上的门</span></span>
       </div>
     </section>
-    <div class="below-hero wrap"><a href="/" data-scroll="journey"><span class="scroll-indicator">↓</span><span>向下滑动，进入小黑的奇想世界</span></a><span>CODE · CREATE · WANDER</span></div>
+    <div class="below-hero wrap"><a href="#journey" data-scroll="journey"><span class="scroll-indicator">↓</span><span>向下滑动，进入小黑的奇想世界</span></a><span>CODE · CREATE · WANDER</span></div>
     ${journeySection()}
     <section class="explore-section section wrap" id="explore" aria-labelledby="explore-title">
       <div class="section-heading"><div><p class="eyebrow section-number">01 / THE EXPLORATION</p><h2 id="explore-title">保持好奇，让想法发生。</h2></div><p class="section-intro">世界很大，值得探索的事情很多。<br/>我从三个方向出发：探索 AI、动手创造、分享发现。</p></div>
@@ -88,8 +90,8 @@ export function renderPage() {
     </section>
     <section class="contact-section wrap" id="contact" aria-labelledby="contact-title"><div class="contact-panel"><div class="contact-portal" aria-hidden="true"><div class="portal-sky"><span>✦</span><i>✧</i></div><div class="portal-door door-left"></div><div class="portal-door door-right"></div><span class="portal-step step-one"></span><span class="portal-step step-two"></span><span class="portal-step step-three"></span></div><p class="eyebrow">LET’S OPEN ANOTHER DOOR</p><h2 id="contact-title">有个有趣的想法？<br/>一起让它发生。</h2><p>聊 AI、聊创造，或者，只是打个招呼。<br/>内容交流与商务合作，欢迎来信。</p><div class="contact-actions"><a class="email-link" href="mailto:miguchn@gmail.com">miguchn@gmail.com</a><button id="copy-email" class="copy-email" aria-label="复制商务合作邮箱" title="复制邮箱"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M15 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h3" stroke="currentColor" stroke-width="1.5"/></svg></button></div><div class="contact-socials"><a href="https://github.com/miguchn" target="_blank" rel="noopener noreferrer">${github} GitHub</a><a href="https://x.com/miguchn" target="_blank" rel="noopener noreferrer"><span class="x-icon">𝕏</span> X / Twitter</a></div></div></section>
   </main>
-  <footer class="footer wrap"><a class="footer-brand" href="/" data-scroll="home" aria-label="咪咕看见小黑，回到首页"><img class="footer-mark" src="/logo.svg" width="36" height="36" alt="" /><span class="footer-brand-copy">咪咕看见小黑<span class="footer-note">保持好奇，下次见。</span></span></a><span>© ${new Date().getFullYear()} MIGU · MADE WITH CURIOSITY</span><a class="back-top" href="/" data-scroll="home" aria-label="回到顶部"><svg viewBox="0 0 40 44" fill="none" aria-hidden="true"><path d="M8 36h24v-5H13v-5h14v-5H18v-5h5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path class="summit-arrow" d="M20 23V4m-5 5 5-5 5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>回到顶部<span class="back-top-note">回到小岛的起点</span></span></a></footer>
-  <a class="summit-link" href="/" data-scroll="home" aria-label="回到顶部" hidden><svg viewBox="0 0 40 44" fill="none" aria-hidden="true"><path d="M8 36h24v-5H13v-5h14v-5H18v-5h5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path class="summit-arrow" d="M20 23V4m-5 5 5-5 5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>回到顶部</span></a>
+  <footer class="footer wrap"><a class="footer-brand" href="#home" data-scroll="home" aria-label="咪咕看见小黑，回到首页"><img class="footer-mark" src="/logo.svg" width="36" height="36" alt="" /><span class="footer-brand-copy">咪咕看见小黑<span class="footer-note">保持好奇，下次见。</span></span></a><span>© ${new Date().getFullYear()} MIGU · MADE WITH CURIOSITY</span><a class="back-top" href="#home" data-scroll="home" aria-label="回到顶部"><svg viewBox="0 0 40 44" fill="none" aria-hidden="true"><path d="M8 36h24v-5H13v-5h14v-5H18v-5h5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path class="summit-arrow" d="M20 23V4m-5 5 5-5 5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>回到顶部<span class="back-top-note">回到小岛的起点</span></span></a></footer>
+  <a class="summit-link" href="#home" data-scroll="home" aria-label="回到顶部" hidden><svg viewBox="0 0 40 44" fill="none" aria-hidden="true"><path d="M8 36h24v-5H13v-5h14v-5H18v-5h5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path class="summit-arrow" d="M20 23V4m-5 5 5-5 5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>回到顶部</span></a>
   <div class="toast" role="status" aria-live="polite"></div>
 `;
 

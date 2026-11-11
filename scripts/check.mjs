@@ -19,6 +19,10 @@ const headers = await readFile(new URL("../dist/_headers", import.meta.url), "ut
 assert.ok(headers.includes(`'sha256-${createHash("sha256").update(schema).digest("base64")}'`));
 assert.ok(!headers.match(/script-src[^;]*'unsafe-inline'/));
 assert.ok(!html.match(/class="chapter-copy"[^>]*aria-hidden="true"/));
+assert.equal((html.match(/data-cat-view="1"/g) || []).length, 1, "Walking cat needs one forward projection");
+assert.equal((html.match(/data-cat-view="-1"/g) || []).length, 1, "Walking cat needs one return projection");
+assert.ok(html.includes('class="journey-cat is-hidden"'), "Production walking cat stays hidden pending design approval");
+assert.ok(html.includes('class="journey-cat-shadow is-hidden"'), "Hidden walking cat must not leave a visible shadow");
 console.log("PASS: initial HTML, unique IDs, structured data and CSP hash");
 
 // Exercise input and timer behavior deterministically, without waiting on wall time.
@@ -168,6 +172,7 @@ try {
     assert.ok(restingProgress(p, -1) <= p + 1e-7);
   }
   const { walkLegs, walkStance, solveLeg } = await server.ssrLoadModule("/src/cat-gait.ts");
+  const { legShape, pawShape, projectCatPoint, projectLegPose } = await server.ssrLoadModule("/src/cat-walk-rig.ts");
   const near = (actual, expected, label, tolerance = 1e-7) =>
     assert.ok(Math.abs(actual - expected) <= tolerance, `${label}: ${actual} versus ${expected}`);
   const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -203,15 +208,25 @@ try {
           near(leg.ankle.y, leg.foot.y - 1.8, `${name} ankle/paw attachment y`);
           near(leg.hip.x, cfg.hip.x, `${name} hip anchor x`);
           near(leg.hip.y, cfg.hip.y, `${name} hip anchor y`);
-          const groundGap = cfg.floor - (leg.foot.y - pose.bob);
+          const planeAt = (point) => cfg.floor - .5 * (point.x - cfg.restX);
+          const groundGap = planeAt(leg.foot) - (leg.foot.y - pose.bob);
           assert.ok(groundGap >= -1e-7, `${name} paw penetrates its contact plane`);
-          // Round caps extend beyond the centerline: include their full radius.
-          const upperEdge = Math.max(leg.hip.y, leg.knee.y) + cfg.width / 2 - pose.bob;
-          const lowerEdge = Math.max(leg.knee.y, leg.ankle.y) + cfg.width * .75 / 2 - pose.bob;
-          assert.ok(leg.knee.y - pose.bob <= cfg.floor + 1e-7, `${name} knee penetrates its contact plane`);
-          assert.ok(leg.ankle.y - pose.bob <= cfg.floor + 1e-7, `${name} ankle penetrates its contact plane`);
-          assert.ok(upperEdge <= cfg.floor + 1e-7, `${name} upper-leg stroke penetrates its contact plane`);
-          assert.ok(lowerEdge <= cfg.floor + 1e-7, `${name} lower-leg stroke penetrates its contact plane`);
+          // These are the actual solver joints. The model uses filled limb
+          // contours, so the old round-stroke radius assumptions do not apply.
+          for (const joint of ["hip", "knee", "ankle"]) {
+            assert.ok(leg[joint].y - pose.bob <= planeAt(leg[joint]) + 1e-7, `${name}/${joint} penetrates its NE contact plane`);
+          }
+          // Check the actual solid silhouettes, including the paw's side/top
+          // faces, rather than treating their centerlines as painted geometry.
+          const limbArt = legShape(leg, name), pawArt = pawShape(name);
+          assert.ok(!/NaN|Infinity/.test(limbArt.outline + limbArt.facet + pawArt.top + pawArt.side));
+          for (const vertex of limbArt.vertices) {
+            assert.ok(vertex.y - pose.bob <= planeAt(vertex) + 1e-7, `${name} solid limb penetrates its NE plane`);
+          }
+          for (const vertex of pawArt.vertices) {
+            const positioned = { x: leg.foot.x + vertex.x, y: leg.foot.y + vertex.y };
+            assert.ok(positioned.y - pose.bob <= planeAt(positioned) + 1e-7, `${name} solid paw penetrates its NE plane`);
+          }
           assert.ok(leg.lift >= 0 && Number.isFinite(leg.lift));
           near(groundGap, leg.lift, `${name} body-bob compensation`);
           const travel = direction > 0 ? t : 1 - t;
@@ -242,7 +257,34 @@ try {
       const lifted = Object.entries(pose.legs).filter(([, leg]) => leg.lift > 1e-7).map(([name]) => name);
       assert.deepEqual(lifted, [order[i]], `Four-beat paw order at quarter ${i}, direction ${direction}`);
       for (const [name, leg] of Object.entries(pose.legs)) {
-        if (name !== order[i]) near(leg.foot.y - pose.bob, walkLegs[name].floor, `${name} three-paw support`);
+        if (name !== order[i]) near(leg.foot.y - pose.bob, walkLegs[name].floor - .5 * (leg.foot.x - walkLegs[name].restX), `${name} three-paw support on NE plane`);
+      }
+    }
+  }
+  // Both directions are projected from the same longitudinal/depth/height
+  // model. They use different visible faces, without shearing the SVG group.
+  for (const direction of [-1, 1]) {
+    for (const point of [{ u: -18, v: -5, h: 0 }, { u: 0, v: 0, h: 12 }, { u: 18, v: 4, h: 30 }]) {
+      const ground = projectCatPoint({ ...point, h: 0 }, direction);
+      const raised = projectCatPoint(point, direction);
+      near(raised.x, ground.x, `direction ${direction} preserves vertical x`);
+      near(raised.y, ground.y - point.h, `direction ${direction} preserves vertical height`);
+      near(ground.y + .5 * ground.x, point.v, `direction ${direction} preserves the NE ground axis`);
+    }
+    for (const t of [0, .125, .25, .5, .75, .875, 1]) {
+      const pose = sampleGait(t, true, direction);
+      for (const [name, leg] of Object.entries(pose.legs)) {
+        const projected = projectLegPose(leg, name, direction);
+        const plane = projected.foot.y + .5 * projected.foot.x;
+        const art = legShape(projected, name), paw = pawShape(name, direction);
+        assert.ok(!/NaN|Infinity/.test(art.outline + art.facet + paw.top + paw.side));
+        for (const vertex of art.vertices) {
+          assert.ok(vertex.y + .5 * vertex.x <= plane + 1e-7, `${name} projected limb penetrates direction ${direction} floor`);
+        }
+        for (const vertex of paw.vertices) {
+          const positioned = { x: projected.foot.x + vertex.x, y: projected.foot.y + vertex.y };
+          assert.ok(positioned.y + .5 * positioned.x <= plane + 1e-7, `${name} projected paw penetrates direction ${direction} floor`);
+        }
       }
     }
   }
@@ -256,7 +298,7 @@ try {
     }
   }
   console.log(`PASS: ${journeyStops.length} route contacts, 1001 path samples and reverse settling`);
-  console.log("PASS: 6006 IK poses, fixed bone lengths, planted paws, stroke clearance, three-paw support, four-beat order, breath compensation and continuous reverse gait");
+  console.log("PASS: 6006 IK poses, fixed bone lengths, local NE-plane contacts, solid limb/paw clearance, true two-direction projection, three-paw support, four-beat order, breath compensation and continuous reverse gait");
 
 } finally {
   await server.close();

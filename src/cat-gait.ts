@@ -1,13 +1,12 @@
-/** Small, fixed-length limbs. Coordinates are shared by SVG rendering and animation. */
+/** Fixed-length legs on the monument's NE ground axis (screen y = -.5x). */
 export type Point = { x: number; y: number };
-// Lift the accepted silhouette slightly while keeping all paws on the same surface.
 export const walkBodyLift = 1.6;
 export const walkStance = .75;
 export const walkLegs = {
-  backFar: { hip: { x: -4.5, y: -8.5 - walkBodyLift }, restX: -4.8, floor: -1.4, upper: 4.7, lower: 4.8, width: 3.5, paw: 2.2, phase: .25, bend: -1 },
-  frontFar: { hip: { x: 9, y: -8.5 - walkBodyLift }, restX: 9.5, floor: -1.4, upper: 4.7, lower: 4.8, width: 3.4, paw: 2.2, phase: 0, bend: 1 },
-  backNear: { hip: { x: -7.5, y: -7.3 - walkBodyLift }, restX: -7.8, floor: 0, upper: 4.8, lower: 5.0, width: 4.5, paw: 2.7, phase: .75, bend: -1 },
-  frontNear: { hip: { x: 6, y: -7.3 - walkBodyLift }, restX: 6.6, floor: 0, upper: 4.8, lower: 5.0, width: 4.2, paw: 2.7, phase: .5, bend: 1 },
+  backFar: { hip: { x: -16, y: -7.7 }, restX: -16, floor: 3, upper: 5.1, lower: 5.3, width: 3.6, paw: 1.8, phase: .25, bend: -1 },
+  frontFar: { hip: { x: 4, y: -17.7 }, restX: 5, floor: -7.5, upper: 5.1, lower: 5.3, width: 3.6, paw: 1.8, phase: 0, bend: 1 },
+  backNear: { hip: { x: -11, y: -5.2 }, restX: -11, floor: 5.5, upper: 5.1, lower: 5.3, width: 4.4, paw: 2.2, phase: .75, bend: -1 },
+  frontNear: { hip: { x: 9, y: -15.2 }, restX: 10, floor: -5, upper: 5.1, lower: 5.3, width: 4.4, paw: 2.2, phase: .5, bend: 1 },
 } as const;
 export type LegName = keyof typeof walkLegs;
 export type LegPose = { hip: Point; knee: Point; ankle: Point; foot: Point; lift: number };
@@ -32,22 +31,23 @@ export function sampleGait(t: number, moving: boolean, facing: number, breath = 
   const time = clamp(t);
   const travel = facing > 0 ? time : 1 - time;
   const activity = moving ? smooth(time / .12) * smooth((1 - time) / .12) : 0;
-  const bob = activity * .28 * Math.sin(travel * Math.PI * 2) ** 2 + breath;
+  const bob = activity * .18 * Math.sin(travel * Math.PI * 2) ** 2 + breath;
   const legs = {} as Record<LegName, LegPose>;
   for (const name of Object.keys(walkLegs) as LegName[]) {
     const leg = walkLegs[name];
     const phase = (travel + leg.phase) % 1;
     const stance = phase < walkStance;
     const u = stance ? phase / walkStance : (phase - walkStance) / (1 - walkStance);
-    const reach = (stance ? 1 - 2 * smooth(u) : -1 + 2 * smooth(u)) * 2.7 * activity;
-    const lift = stance ? 0 : Math.sin(u * Math.PI) ** 2 * 2.2 * activity;
-    // The whole body rises by bob; compensate foot targets to keep support paws down.
-    const foot = { x: leg.restX + reach, y: leg.floor + bob - lift };
+    const reach = (stance ? 1 - 2 * smooth(u) : -1 + 2 * smooth(u)) * 1.6 * activity;
+    const lift = stance ? 0 : Math.sin(u * Math.PI) ** 2 * 1.7 * activity;
+    // Project the stride onto the same NE axis as the architecture. Bob is
+    // compensated at the paws; this is local plane contact, not world foot-lock.
+    const foot = { x: leg.restX + reach, y: leg.floor - .5 * reach + bob - lift };
     const ankle = { x: foot.x, y: foot.y - 1.8 };
     const solved = solveLeg(leg.hip, ankle, leg.upper, leg.lower, leg.bend);
     legs[name] = { hip: leg.hip, knee: solved.knee, ankle: solved.ankle, foot, lift };
   }
-  return { bob, legs, nod: activity * Math.sin(travel * Math.PI * 2) * 1.0,
-    tail: activity * Math.sin(travel * Math.PI * 2) * 4 };
+  return { bob, legs, nod: activity * Math.sin(travel * Math.PI * 2) * .6,
+    tail: activity * Math.sin(travel * Math.PI * 2) * 2.5 };
 }
 export const bonePath = (a: Point, b: Point) => `M${a.x} ${a.y}L${b.x} ${b.y}`;

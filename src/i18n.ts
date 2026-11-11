@@ -1,6 +1,10 @@
 export type Locale = "zh" | "en";
 let locale: Locale = "zh";
 const messages: readonly (readonly [string, string])[] = [
+  ["品牌开场", "Brand introduction"],
+  ["咪咕开口 M 标志", "Migu open-M logo"],
+  ["好奇心，正在发生。", "Curiosity is taking shape."],
+  ["跳过开场", "Skip introduction"],
   [
     "咪咕看见小黑，回到首页",
     "Migu CHN, home"

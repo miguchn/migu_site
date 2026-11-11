@@ -1,7 +1,7 @@
 import { block } from "./scene";
 import { catWalk } from "./cat";
 
-/** The walking cat stays in the scene. Set true to show it on the monument again. */
+/** Keep the walking cat hidden until its visual design is accepted. */
 const showWalkingCat = false;
 const walkingCatState = showWalkingCat ? "" : " is-hidden";
 
@@ -21,7 +21,7 @@ export const upperStairs = Array.from({ length: 11 }, (_, i) => ({
 }));
 export const topCenter = ({ x, y, w, d }: { x: number; y: number; w: number; d: number }) =>
   ({ x: x + (w + d) / 2, y: y + (d - w) / 4 });
-export const roofLanding = { x: 780, y: 133, w: 32, d: 24 };
+export const roofLanding = { x: 811, y: 117, w: 32, d: 24 };
 export const bridgeLanding = { x: 386, y: 385.5, w: 26, d: 44 };
 export const bridgeStart = { x: 421, y: 390 };
 export const bridgeEnd = { x: 641, y: 280 };

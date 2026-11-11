@@ -1,4 +1,5 @@
-import { walkLegs, walkBodyLift, sampleGait, bonePath, type LegName } from "./cat-gait";
+import { sampleGait, type LegName } from "./cat-gait";
+import { legShape, pawShape, projectLegPose, walkPalette as ink } from "./cat-walk-rig";
 
 /** Sitting Xiaōhēi keeps the proportions of the owner's references.
  * The walking rig is a separate model. Both use y=0 as the ground.
@@ -27,50 +28,50 @@ export const cat = `<g class="cat-body">
   <g class="cat-paw-right"><ellipse cx="5" cy="-1.9" rx="4.8" ry="1.9" fill="#29292b"/><path d="M7-3Q8-1.8 7-.3" fill="none" stroke="#505052" stroke-width=".65"/></g>
   ${catFace}
 </g>`;
-/** Chibi walking Xiaōhēi: broad round head, compact body, short planted paws. */
+/** A carved cat projected from longitudinal / depth / height coordinates.
+ * Each direction has its own visible faces, rather than mirroring a flat drawing.
+ */
 const restingLegs = sampleGait(0, false, 1).legs;
 const legClasses = { backFar: "back-far", frontFar: "front-far", backNear: "back", frontNear: "front" } as const;
-function walkingPaw(name: LegName) {
-  const leg = walkLegs[name], pose = restingLegs[name];
-  const color = name.endsWith("Far") ? "#414644" : "#3a413e";
-  return `<ellipse class="cat-foot" data-paw="${name}" cx="${pose.foot.x}" cy="${pose.foot.y - 1.4}" rx="${leg.paw}" ry="1.4" fill="${color}"/>`;
+function walkingPaw(name: LegName, facing: number) {
+  const art = pawShape(name, facing), pose = projectLegPose(restingLegs[name], name, facing);
+  return `<g class="cat-foot" data-paw="${name}" transform="translate(${pose.foot.x} ${pose.foot.y})"><path d="${art.side}" fill="${ink.shade}"/><path d="${art.top}" fill="${name.endsWith("Far") ? ink.shade : ink.side}"/></g>`;
 }
-function walkingLeg(name: LegName) {
-  const leg = walkLegs[name], pose = restingLegs[name];
-  const far = name.endsWith("Far"), color = far ? "#414644" : "#292d2f";
+function walkingLeg(name: LegName, facing: number) {
+  const art = legShape(projectLegPose(restingLegs[name], name, facing), name);
   return `<g class="cat-leg cat-leg-${legClasses[name]}" data-leg="${name}">
-    <path class="cat-leg-upper" d="${bonePath(pose.hip, pose.knee)}" stroke="${color}" stroke-width="${leg.width}" stroke-linecap="round"/>
-    <path class="cat-leg-lower" d="${bonePath(pose.knee, pose.ankle)}" stroke="${color}" stroke-width="${leg.width * .75}" stroke-linecap="round"/>
-    ${far ? walkingPaw(name) : ""}
+    <path class="cat-leg-shape" d="${art.outline}" fill="${name.endsWith("Far") ? ink.shade : ink.side}"/>
+    <path class="cat-leg-facet" d="${art.facet}" fill="${ink.shade}"/>
+    ${name.endsWith("Far") ? walkingPaw(name, facing) : ""}
   </g>`;
 }
-export const catWalk = `<g class="cat-body cat-walking">
-  <g transform="translate(0 ${-walkBodyLift})"><g class="cat-tail"><path d="M-10-9C-19-8-24-13-21-21C-20-24-17-23-18-21C-20-16-17-13-10-13Z" fill="#343a37"/></g></g>
-  ${walkingLeg("backFar")}${walkingLeg("frontFar")}${walkingLeg("backNear")}${walkingLeg("frontNear")}
-  <g class="cat-walk-torso" transform="translate(0 ${-walkBodyLift})">
-    <path d="M-12-5C-17-10-14-18-9-20C-4-23 4-21 8-17C12-13 12-5 6-3Q-4-1-12-5Z" fill="#292d2f"/>
-    <path d="M-11-15Q-9-20-4-20Q-7-19-9-15Z" fill="#4d5750" opacity=".25"/>
-    <path d="M0-17Q7-14 6-8Q3-4-2-5Q2-9 0-17Z" fill="#24282a" opacity=".5"/>
-    <path d="M0-16Q7-12 15-17" stroke="#c58f7e" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-    <g class="cat-bell"><circle cx="7" cy="-13.4" r="1.75" fill="#dac38b"/><path d="M7-13.6v1.1" stroke="#826d45" stroke-width=".5" stroke-linecap="round"/></g>
-    <g class="cat-head">
-      <path d="M-7-30C-10-33-10-38-8-39Q-6-40 0-34Q7-37 14-34L20-38Q23-40 23-35L22-30C26-26 23-20 18-17C11-12 2-13-4-17C-10-20-12-26-7-30Z" fill="#303537"/>
-      <path d="m-7-35 2 2 2-1m21 .1 2-2-.5 3" fill="#b89189" opacity=".45"/>
-      <path d="M-4-29Q-2-34 5-33Q9-33 11-31Q2-33-4-27Z" fill="#465047" opacity=".28"/>
-      <g class="cat-eyes">
-        <ellipse cx="1.2" cy="-25.5" rx="3.5" ry="4.1" fill="#c4cea2"/>
-        <ellipse cx="13.8" cy="-24.8" rx="4.1" ry="4.5" fill="#c4cea2"/>
-        <ellipse cx="1.9" cy="-25.4" rx="2.35" ry="2.95" fill="#1c2324"/>
-        <ellipse cx="14.5" cy="-24.7" rx="2.8" ry="3.3" fill="#1c2324"/>
-        <circle cx="1" cy="-26.9" r=".8" fill="#fff5df"/>
-        <circle cx="13.4" cy="-26.3" r=".95" fill="#fff5df"/>
+function walkingView(facing: number) {
+  // Volumes stay round in screen space. Only their centres follow the ground plane.
+  const headX = 11 * facing, headY = -22 - 5 * facing;
+  return `<g data-cat-view="${facing}"${facing < 0 ? ' style="display:none"' : ''}>
+    <g class="cat-tail"><g transform="translate(${-13 * facing} ${-12 + 6 * facing})"><path d="M0 0 C${-13 * facing} 2 ${-17 * facing} -9 ${-14 * facing} -18 Q${-12 * facing} -23 ${-9 * facing} -20" stroke="${ink.side}" stroke-width="4.6" stroke-linecap="butt" fill="none"/></g></g>
+    ${walkingLeg("backFar", facing)}${walkingLeg("frontFar", facing)}
+    ${walkingLeg("backNear", facing)}${walkingLeg("frontNear", facing)}
+    <g class="cat-walk-torso">
+      <path d="M${-20 * facing}-12L${-13 * facing}-22L${6 * facing}-25L${16 * facing}-18L${12 * facing}-7L${-10 * facing}-4Z" fill="${ink.side}"/>
+      <path d="M${-20 * facing}-12L${-13 * facing}-22L${6 * facing}-25L${14 * facing}-19L${-4 * facing}-15Z" fill="${ink.top}" opacity=".48"/>
+      <path d="M${5 * facing}-24L${16 * facing}-18L${12 * facing}-7L${7 * facing}-9Z" fill="${ink.shade}" opacity=".32"/>
+      <g transform="translate(${headX} ${headY})">
+        <g class="cat-head">
+          <path d="M-10-3L-10-11L-3-8L1-9L9-12L10-3L13 2L7 8L-2 10L-10 5Z" fill="${ink.side}"/>
+          <path d="M-10-11L-3-8L1-9L9-12L8-7L0-5L-8-6Z" fill="${ink.top}" opacity=".55"/>
+          <g class="cat-eyes" fill="${ink.eye}">
+            <ellipse cx="-3.7" cy=".2" rx="1.1" ry="1.45"/><ellipse cx="4.6" cy=".2" rx="1.1" ry="1.45"/>
+            <ellipse cx="${-3.7 + facing * .25}" cy=".3" rx=".55" ry="1.1" fill="${ink.shade}"/><ellipse cx="${4.6 + facing * .25}" cy=".3" rx=".55" ry="1.1" fill="${ink.shade}"/>
+          </g>
+          <path d="M-.4 3.3L.5 4.2L1.4 3.3" fill="none" stroke="${ink.top}" stroke-width=".6" stroke-linecap="round"/>
+        </g>
       </g>
-      <path d="m7.3-21.2 2.8.3-1.5 1.3Z" fill="#b99b94"/>
-      <path d="M8.6-19.6q-.7 1.6-2.6.8m2.6-.8q.5 1.7 2.3 1" stroke="#929d93" stroke-width=".65" stroke-linecap="round" fill="none"/>
     </g>
-  </g>
-  ${walkingPaw("backNear")}${walkingPaw("frontNear")}
-</g>`;
+    ${walkingPaw("backNear", facing)}${walkingPaw("frontNear", facing)}
+  </g>`;
+}
+export const catWalk = `<g class="cat-body cat-walking">${walkingView(1)}${walkingView(-1)}</g>`;
 export const catPortrait = `<g class="portrait-art">
   <ellipse cx="1" cy="20" rx="27" ry="3.5" fill="#29272f" opacity=".1"/>
   <g transform="translate(-2 18) scale(1.4)">${cat}</g>

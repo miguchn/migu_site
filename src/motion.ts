@@ -1,5 +1,5 @@
 import { journeyStops } from "./journey";
-import { sampleGait, bonePath, walkLegs, type LegName } from "./cat-gait";
+import { WALK_SPEED } from "./cat-walk-cycle";
 export { sampleGait } from "./cat-gait";
 
 const clamp = (value: number, min = 0, max = 1) => Math.max(min, Math.min(max, value));
@@ -24,49 +24,69 @@ export function sampleJourney(progress: number) {
     hop, t, moving, landing: moving ? Math.sin(range(t, 0.82, 1) * Math.PI) : 0 };
 }
 
+export const CAT_WALK_CADENCE = .78;
+
+/** Advance along the route at a quiet walking pace, even after a wheel flick.
+ * Limit actual projected travel, so distance-driven paws retain their foot lock.
+ * Binary search respects the easing and pauses already authored in the route.
+ */
+export function advanceCatProgress(current: number, target: number, dt: number, scale = 1.05) {
+  const seconds = clamp(dt, 0, 50) / 1000;
+  const direction = Math.sign(target - current);
+  const eased = current + (target - current) * (1 - Math.exp(-seconds / .22));
+  const candidate = current + direction * Math.min(Math.abs(eased - current), seconds * .16);
+  const maxTravel = (20 / Math.sqrt(2)) * scale * WALK_SPEED * CAT_WALK_CADENCE * seconds;
+  const start = sampleJourney(current).x;
+  if (Math.abs(sampleJourney(candidate).x - start) <= maxTravel) return candidate;
+  let low = 0, high = 1;
+  for (let i = 0; i < 20; i++) {
+    const middle = (low + high) / 2;
+    const progress = current + (candidate - current) * middle;
+    if (Math.abs(sampleJourney(progress).x - start) > maxTravel) high = middle;
+    else low = middle;
+  }
+  return current + (candidate - current) * low;
+}
+
 /** Finish the current step on idle, in the direction of travel. */
 export function restingProgress(p: number, direction: number) {
   if (direction > 0) return journeyStops.find((stop) => stop.at >= p - 0.00001)?.at ?? 1;
   return [...journeyStops].reverse().find((stop) => stop.at <= p + 0.00001)?.at ?? 0;
 }
 
-/** Native scrolling stays in control; rAF only coordinates the visible illustration. */
+/** Native scrolling is the scene timeline; no hidden actor keeps a render loop alive. */
 export function initMotion() {
   const section = document.querySelector<HTMLElement>(".journey-section")!;
   const stage = document.querySelector<HTMLElement>(".journey-stage")!;
   const world = document.querySelector<HTMLElement>(".journey-world")!;
   const bridge = document.querySelector<SVGGElement>(".journey-bridge")!;
   const bridgePivot = document.querySelector<SVGGElement>(".journey-bridge-pivot")!;
-  const cat = document.querySelector<SVGGElement>(".journey-cat")!;
-  const pose = cat.querySelector<SVGGElement>(".journey-cat-pose")!;
-  const body = cat.querySelector<SVGGElement>(".cat-body")!;
-  const head = cat.querySelector<SVGGElement>(".cat-head")!;
-  const tail = cat.querySelector<SVGGElement>(".cat-tail")!;
-  const limbs = Object.fromEntries((Object.keys(walkLegs) as LegName[]).map((name) => {
-    const leg = cat.querySelector<SVGGElement>(`[data-leg="${name}"]`)!;
-    return [name, { upper: leg.querySelector<SVGPathElement>(".cat-leg-upper")!,
-      lower: leg.querySelector<SVGPathElement>(".cat-leg-lower")!,
-      foot: cat.querySelector<SVGEllipseElement>(`[data-paw="${name}"]`)! }];
-  })) as Record<LegName, { upper: SVGPathElement; lower: SVGPathElement; foot: SVGEllipseElement }>;
-  const shadow = document.querySelector<SVGEllipseElement>(".journey-cat-shadow")!;
   const pieces = [...document.querySelectorAll<SVGGElement>("[data-build]")]
     .map((el) => ({ el, values: el.dataset.build!.split(",").map(Number) }));
   const copies = [...document.querySelectorAll<HTMLElement>(".chapter-copy")];
   const chapterButtons = [...document.querySelectorAll<HTMLButtonElement>("[data-chapter]")];
   const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
   const mobileJourney = matchMedia("(max-width: 700px)");
-  if (location.hash || location.search) history.replaceState(null, "", location.pathname);
-  // Native smooth scrolling no-ops on some mobile browsers, and the old
-  // 24px gap left the journey title short of a full screen. Drive the scroll
-  // ourselves so the destination actually arrives.
+  const hero = document.querySelector<HTMLElement>(".hero-art")!;
+  const portal = document.querySelector<HTMLElement>(".contact-portal")!;
+  const ornaments = [...document.querySelectorAll<HTMLElement>(".project-card, .explore-item, .about-art, .contact-panel")];
+  const percent = document.querySelector<HTMLElement>(".journey-percent")!;
+  const scrollHint = document.querySelector<HTMLElement>(".journey-scroll-hint")!;
+  const summit = document.querySelector<HTMLAnchorElement>(".summit-link")!;
+  const footer = document.querySelector<HTMLElement>(".footer")!;
+  summit.hidden = false;
+  let frame = 0;
   let scrollAnimation = 0;
+  let activeChapter = -1;
   const root = document.documentElement;
   let restoreScrollBehavior = () => {};
+
   function stopScrollAnimation() {
     cancelAnimationFrame(scrollAnimation);
     restoreScrollBehavior();
     removeEventListener("wheel", stopScrollAnimation);
     removeEventListener("touchstart", stopScrollAnimation);
+    removeEventListener("keydown", stopScrollAnimation);
   }
   function scrollPageTo(top: number) {
     stopScrollAnimation();
@@ -87,10 +107,10 @@ export function initMotion() {
     const t0 = performance.now();
     addEventListener("wheel", stopScrollAnimation, { passive: true });
     addEventListener("touchstart", stopScrollAnimation, { passive: true });
+    addEventListener("keydown", stopScrollAnimation);
     const tick = (now: number) => {
       const t = Math.min(1, (now - t0) / duration);
-      const eased = t * t * (3 - 2 * t);
-      scrollTo(0, Math.round(start + change * eased));
+      scrollTo(0, Math.round(start + change * smooth(t)));
       if (t < 1) scrollAnimation = requestAnimationFrame(tick);
       else stopScrollAnimation();
     };
@@ -98,6 +118,7 @@ export function initMotion() {
   }
   document.querySelectorAll<HTMLAnchorElement>("a[data-scroll]").forEach((link) => {
     link.addEventListener("click", (event) => {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
       const destination = link.dataset.scroll!;
       const target = document.getElementById(destination);
       if (!target) return;
@@ -107,157 +128,100 @@ export function initMotion() {
       if (destination === "main") target.focus({ preventScroll: true });
     });
   });
-  const hero = document.querySelector<HTMLElement>(".hero-art")!;
-  const portal = document.querySelector<HTMLElement>(".contact-portal")!;
-  const ornaments = [...document.querySelectorAll<HTMLElement>(".project-card, .explore-item, .about-art, .contact-panel")];
-  const entered = new Set<HTMLElement>();
-  const percent = document.querySelector<HTMLElement>(".journey-percent")!;
-  const scrollHint = document.querySelector<HTMLElement>(".journey-scroll-hint")!;
-  const summit = document.querySelector<HTMLAnchorElement>(".summit-link")!;
-  const footer = document.querySelector<HTMLElement>(".footer")!;
-  summit.hidden = false;
-  let frame = 0;
-  let activeChapter = -1;
-  let catProgress: number | undefined;
-  let previousProgress = 0;
-  let facing = 1;
-  let lastScrollTime = -1000;
-  let previousTime = performance.now();
 
-  function update(now: number) {
+  function update() {
     frame = 0;
-    const dt = Math.min(50, Math.max(1, now - previousTime));
-    previousTime = now;
+    const reduced = reduceMotion.matches;
+    const fluid = reduced || mobileJourney.matches;
     const showSummit = scrollY > innerHeight * 0.7 && footer.getBoundingClientRect().top > innerHeight;
     summit.classList.toggle("is-visible", showSummit);
     summit.setAttribute("aria-hidden", String(!showSummit));
     summit.tabIndex = showSummit ? 0 : -1;
     const rect = section.getBoundingClientRect();
-    const distance = Math.max(1, section.offsetHeight - innerHeight);
-    const p = clamp(-rect.top / distance);
-    const reduced = reduceMotion.matches;
-    const visible = rect.top < innerHeight && rect.bottom > 0;
-    if (Math.abs(p - previousProgress) > 0.00005) facing = p > previousProgress ? 1 : -1;
-    previousProgress = p;
-    if (visible || activeChapter === -1 || reduced) {
-      const phase = p < 0.35 ? 0 : p < 0.70 ? 1 : 2;
-      stage.style.setProperty("--dusk", String(range(p, 0.23, 0.51) * (1 - range(p, 0.68, 0.96))));
-      const night = range(p, 0.67, 0.97);
-      stage.style.setProperty("--night", String(night));
-      stage.style.setProperty("--copy-night", night > 0.55 ? "1" : "0");
-      stage.style.setProperty("--progress", String(p));
-      stage.style.setProperty("--orb-x", `${(p - 0.5) * 50}px`);
-      stage.style.setProperty("--orb-y", `${Math.sin(p * Math.PI) * -25}px`);
-      percent.textContent = String(Math.round(p * 100)).padStart(2, "0");
-      // The world stops responding at the end of the route, so does its hint.
-      scrollHint.style.opacity = String(1 - range(p, 0.93, 0.99));
-      // The isometric architecture already supplies the perspective. Keep its horizon stable.
-      world.style.transform = reduced ? "none" : `translate3d(0,${range(p, 0.65, 1) * -8}px,0)`;
-      for (const { el, values: [start, end, x, y] } of pieces) {
-        const t = reduced ? 1 : range(p, start, end);
-        el.style.opacity = String(t);
-        el.style.transform = `translate(${x * (1 - t)}px,${y * (1 - t)}px)`;
+    const p = clamp(-rect.top / Math.max(1, section.offsetHeight - innerHeight));
+    // Static layouts show a completed island. Desktop assembles directly under the scroll.
+    const builtProgress = fluid ? 1 : p;
+    const sceneProgress = fluid ? 0 : p;
+    const phase = Math.min(2, Math.floor(p * 3));
+    const night = range(sceneProgress, 0.67, 0.97);
+    stage.style.setProperty("--dusk", String(range(sceneProgress, 0.23, 0.51) * (1 - range(sceneProgress, 0.68, 0.96))));
+    stage.style.setProperty("--night", String(night));
+    stage.style.setProperty("--copy-night", night > 0.55 ? "1" : "0");
+    stage.style.setProperty("--progress", String(sceneProgress));
+    stage.style.setProperty("--orb-x", `${(sceneProgress - 0.5) * 50}px`);
+    stage.style.setProperty("--orb-y", `${Math.sin(sceneProgress * Math.PI) * -25}px`);
+    percent.textContent = String(Math.round(p * 100)).padStart(2, "0");
+    scrollHint.style.opacity = String(1 - range(sceneProgress, 0.93, 0.99));
+    world.style.transform = fluid ? "none" : `translate3d(0,${range(p, 0.65, 1) * -8}px,0)`;
+    for (const { el, values: [start, end, x, y] } of pieces) {
+      const t = fluid ? 1 : range(builtProgress, start, end);
+      el.style.opacity = String(t);
+      el.style.transform = `translate(${x * (1 - t)}px,${y * (1 - t)}px)`;
+    }
+    bridge.style.transform = `rotate(${-78 * (1 - (fluid ? 1 : range(builtProgress, 0.24, 0.40)))}deg)`;
+    bridgePivot.style.opacity = String(fluid ? 1 : range(builtProgress, 0.16, 0.23));
+    copies.forEach((copy, index) => {
+      if (fluid) {
+        copy.style.removeProperty("opacity");
+        copy.style.removeProperty("transform");
+        copy.style.removeProperty("visibility");
+        copy.removeAttribute("aria-hidden");
+      } else {
+        const visible = index === phase;
+        copy.style.opacity = visible ? "1" : "0";
+        copy.style.transform = `translateY(calc(-50% + ${(index - phase) * 34}px))`;
+        copy.style.visibility = visible ? "visible" : "hidden";
+        copy.setAttribute("aria-hidden", String(!visible));
       }
-      bridge.style.transform = `rotate(${-78 * (1 - (reduced ? 1 : range(p, 0.24, 0.40)))}deg)`;
-      bridgePivot.style.opacity = String(reduced ? 1 : range(p, 0.16, 0.23));
-      const scrolling = now - lastScrollTime < 110;
-      const target = reduced ? 1 : scrolling ? p : restingProgress(p, facing);
-      catProgress ??= target;
-      if (reduced) catProgress = 1;
-      else catProgress += (target - catProgress) * (1 - Math.exp(-dt / 65));
-      if (Math.abs(target - catProgress) < 0.00003) catProgress = target;
-      const at = sampleJourney(catProgress);
-      const breath = reduced ? 0 : Math.sin(now / 1100) * .08;
-      const gait = sampleGait(at.t, !reduced && at.moving, facing, breath);
-      // Route coordinates stay intact. Only the body bobs; supporting paws compensate.
-      cat.setAttribute("transform", `translate(${at.x} ${at.y}) scale(${mobileJourney.matches ? 1.16 : 1.05})`);
-      pose.setAttribute("transform", `scale(${facing} 1)`);
-      body.setAttribute("transform", `translate(0 ${-gait.bob})`);
-      for (const name of Object.keys(walkLegs) as LegName[]) {
-        const limb = limbs[name], leg = gait.legs[name];
-        limb.upper.setAttribute("d", bonePath(leg.hip, leg.knee));
-        limb.lower.setAttribute("d", bonePath(leg.knee, leg.ankle));
-        limb.foot.setAttribute("cx", String(leg.foot.x));
-        limb.foot.setAttribute("cy", String(leg.foot.y - 1.4));
-      }
-      head.setAttribute("transform", `rotate(${gait.nod} 7 -16)`);
-      const tailRest = reduced ? 0 : Math.sin(now / 1000) * 1.5;
-      tail.setAttribute("transform", `rotate(${gait.tail + tailRest} -11 -10)`);
-      shadow.setAttribute("transform", `translate(${at.x} ${at.y}) scale(${1 - Math.max(0, gait.bob) * .03} 1)`);
-      shadow.style.opacity = ".18";
-      // Chapters hand off sequentially: each text fully leaves before the next
-      // enters, so the two big headlines never overlap mid-transition.
-      const outOne = range(p, 0.29, 0.35);
-      const inTwo = range(p, 0.36, 0.42);
-      const outTwo = range(p, 0.63, 0.69);
-      const inThree = range(p, 0.7, 0.76);
-      const chapters = [
-        { opacity: 1 - outOne, offset: -outOne * 12 },
-        { opacity: inTwo * (1 - outTwo), offset: (1 - inTwo - outTwo) * 12 },
-        { opacity: inThree, offset: (1 - inThree) * 12 },
-      ];
-      copies.forEach((copy, index) => {
-        const opacity = reduced ? Number(index === phase) : chapters[index].opacity;
-        const offset = chapters[index].offset;
-        copy.style.opacity = String(opacity);
-        copy.style.transform = reduced ? "none" : `translateY(${offset}px)`;
-        copy.setAttribute("aria-hidden", String(!reduced && index !== phase));
+    });
+    if (phase !== activeChapter) {
+      chapterButtons.forEach((button, index) => {
+        button.classList.toggle("active", phase === index);
+        button.setAttribute("aria-pressed", String(phase === index));
       });
-      if (phase !== activeChapter) {
-        chapterButtons.forEach((button, index) => {
-          button.classList.toggle("active", phase === index);
-          button.setAttribute("aria-pressed", String(phase === index));
-        });
-        activeChapter = phase;
-      }
-      if (!reduced && (visible || scrolling || catProgress !== target)) requestUpdate();
-    } else {
-      // Resuming an off-screen scene should not replay the whole route.
-      catProgress = p;
+      activeChapter = phase;
     }
     const heroRect = hero.getBoundingClientRect();
-    if (!reduced && heroRect.bottom > 0) {
-      const exit = clamp(-heroRect.top / innerHeight);
-      hero.style.setProperty("--hero-turn", `${exit * 2}deg`);
-      hero.style.setProperty("--hero-shift", `${exit * 18}px`);
+    const exit = reduced ? 0 : clamp(-heroRect.top / innerHeight);
+    hero.style.setProperty("--hero-turn", `${exit * 2}deg`);
+    hero.style.setProperty("--hero-shift", `${exit * -26}px`);
+    if (reduced) {
+      hero.style.setProperty("--pointer-x", "0deg");
+      hero.style.setProperty("--pointer-y", "0deg");
     }
     for (const el of ornaments) {
-      if (entered.has(el)) continue;
       const box = el.getBoundingClientRect();
-      if (box.top > innerHeight || box.bottom < 0) continue;
-      const enter = range(innerHeight - box.top, 0, Math.min(innerHeight * 0.45, box.height));
+      const enter = range(innerHeight - box.top, 0, Math.min(innerHeight * 0.45, Math.max(1, box.height)));
       el.style.setProperty("--enter", String(reduced ? 1 : enter));
-      if (reduced || enter === 1) entered.add(el);
     }
-    // The door opens when the door itself is visible, and can replay on return.
     const portalRect = portal.getBoundingClientRect();
     const portalVisible = Math.max(0, Math.min(portalRect.bottom, innerHeight) - Math.max(portalRect.top, 0));
     const portalRatio = portalVisible / Math.max(1, Math.min(portalRect.height, innerHeight));
     portal.style.setProperty("--door-open", String(reduced ? 1 : range(portalRatio, 0.12, 0.68)));
   }
   function requestUpdate() { if (!frame) frame = requestAnimationFrame(update); }
-  addEventListener("scroll", () => { lastScrollTime = performance.now(); requestUpdate(); }, { passive: true });
+  addEventListener("scroll", requestUpdate, { passive: true });
   addEventListener("resize", requestUpdate);
-  reduceMotion.addEventListener("change", () => {
-    activeChapter = -1;
-    catProgress = undefined;
-    requestUpdate();
-  });
+  addEventListener("pageshow", requestUpdate);
+  reduceMotion.addEventListener("change", () => { stopScrollAnimation(); requestUpdate(); });
+  mobileJourney.addEventListener("change", requestUpdate);
   chapterButtons.forEach((button, index) => button.addEventListener("click", () => {
-    const positions = [0.13, 0.54, 0.99];
-    scrollPageTo(scrollY + section.getBoundingClientRect().top + (section.offsetHeight - innerHeight) * positions[index]);
+    const positions = [0.12, 0.5, 0.88];
+    if (reduceMotion.matches || mobileJourney.matches) {
+      scrollPageTo(scrollY + copies[index].getBoundingClientRect().top - 24);
+    } else {
+      scrollPageTo(scrollY + section.getBoundingClientRect().top + (section.offsetHeight - innerHeight) * positions[index]);
+    }
   }));
-  if (matchMedia("(hover: hover) and (pointer: fine)").matches) {
-    hero.addEventListener("pointermove", (event) => {
-      if (reduceMotion.matches) return;
-      const rect = hero.getBoundingClientRect();
-      hero.style.setProperty("--pointer-x", `${((event.clientX - rect.left) / rect.width - 0.5) * 5}deg`);
-      hero.style.setProperty("--pointer-y", `${((event.clientY - rect.top) / rect.height - 0.5) * -3}deg`);
-    });
-    hero.addEventListener("pointerleave", () => {
-      hero.style.setProperty("--pointer-x", "0deg");
-      hero.style.setProperty("--pointer-y", "0deg");
+  // Preserve direct links after progressive enhancement changes section heights.
+  if (location.hash) {
+    requestAnimationFrame(() => {
+      try {
+        const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+        if (target) scrollTo({ top: scrollY + target.getBoundingClientRect().top, behavior: "instant" });
+      } catch { /* A malformed fragment does not affect normal navigation. */ }
+      requestUpdate();
     });
   }
-  update(performance.now());
+  update();
 }

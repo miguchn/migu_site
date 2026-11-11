@@ -1,0 +1,34 @@
+/* One motion vocabulary: large scenery, short text reveals, stable reading. */
+.reveal {
+  transform: translateY(32px);
+  transition: opacity .5s ease, transform .7s cubic-bezier(.2,.8,.2,1);
+}
+.reveal:focus-within {
+  opacity: 1;
+  transform: none;
+}
+.project-grid { align-items: start; }
+@media (min-width: 701px) {
+  .project-card:nth-child(2) { margin-top: 48px; }
+  .project-card:nth-child(3) { margin-top: 96px; }
+  .project-art { border-radius: 3px; }
+  .section { padding-block: 72px; }
+  .about-section { padding-block: 80px; gap: 72px; }
+  .contact-section { margin-bottom: 40px; }
+}
+@media (min-width: 701px) and (max-width: 1000px) {
+  .hero-copy { container-type: inline-size; }
+  .hero h1 { font-size: clamp(42px, 18cqi, 68px); }
+  .hero-title-line { white-space: nowrap; }
+}
+.portal-door { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal.revealed { opacity: 1; transform: none; transition: none; }
+  .journey-perspective { opacity: 1; }
+}
+
+@media (max-width: 700px) {
+  .section { padding-block: 48px; }
+  .project-grid { gap: 28px; }
+  .contact-section { margin-bottom: 24px; }
+}
