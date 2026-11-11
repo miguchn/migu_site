@@ -64,6 +64,10 @@ button:focus-visible {
   outline-offset: 6px;
   border-radius: 4px;
 }
+/* Intro/skip navigation focuses this reading target, not an interactive control. */
+#main:focus {
+  outline: none;
+}
 ::selection {
   background: #e6bfa8;
   color: #253f35;
