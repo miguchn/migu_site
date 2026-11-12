@@ -30,7 +30,7 @@ import { cat } from "./cat";
 export { cat };
 
 export function island() {
-  return `<svg class="island-svg" viewBox="0 0 760 690" fill="none" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="小黑的小岛，可与小黑和拱门互动">
+  return `<svg class="island-svg" viewBox="0 0 760 690" fill="none" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="纪念碑谷风格的几何场景，可与小黑和拱门互动">
   <defs>
     <linearGradient id="halo" x1="380" y1="50" x2="380" y2="660" gradientUnits="userSpaceOnUse"><stop stop-color="#f1e3d6"/><stop offset="1" stop-color="#f6eee4" stop-opacity="0"/></linearGradient>
     <linearGradient id="water" x1="250" y1="440" x2="500" y2="560" gradientUnits="userSpaceOnUse"><stop stop-color="#a7c6bf"/><stop offset="1" stop-color="#d5e0d3"/></linearGradient>

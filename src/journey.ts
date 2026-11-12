@@ -91,11 +91,11 @@ export function journeyScene() {
 }
 
 export function journeySection() {
-  return `<section class="journey-section" id="journey" aria-label="小黑的奇想漫游">
+  return `<section class="journey-section" id="journey" aria-label="滚动场景">
     <div class="journey-stage">
       <div class="journey-wash wash-dawn"></div><div class="journey-wash wash-dusk"></div><div class="journey-wash wash-night"></div>
       <div class="journey-orb"></div><div class="journey-stars" aria-hidden="true">✦ <span>✧</span> · <i>✦</i></div>
-      <div class="journey-topline"><span>A WALK THROUGH THE IMPOSSIBLE</span><span>小黑的奇想漫游 / <b class="journey-percent">00</b>%</span></div>
+      <div class="journey-topline"><span>A WALK THROUGH THE IMPOSSIBLE</span><span>SCROLL TO EXPLORE / <b class="journey-percent">00</b>%</span></div>
       <div class="journey-copy">
         <article class="chapter-copy" data-copy="0"><p class="chapter-kicker">CHAPTER 01 — 保持好奇</p><h2>还没有路，<br/>那就<span>搭一条。</span></h2><p>每个有趣的东西，都从一个「要不试试」开始。<br/>继续向下，让散落的灵感长成阶梯。</p></article>
         <article class="chapter-copy" data-copy="1"><p class="chapter-kicker">CHAPTER 02 — 换个角度</p><h2>转个方向，<br/>就有<span>新可能。</span></h2><p>转动的不是世界，是看世界的方式。<br/>让好奇心，连接两个不可能的地方。</p></article>

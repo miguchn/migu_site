@@ -68,7 +68,6 @@ export function initMotion() {
   const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
   const mobileJourney = matchMedia("(max-width: 700px)");
   const hero = document.querySelector<HTMLElement>(".hero-art")!;
-  const portal = document.querySelector<HTMLElement>(".contact-portal")!;
   const ornaments = [...document.querySelectorAll<HTMLElement>(".project-card, .explore-item, .about-art, .contact-panel")];
   const percent = document.querySelector<HTMLElement>(".journey-percent")!;
   const scrollHint = document.querySelector<HTMLElement>(".journey-scroll-hint")!;
@@ -124,7 +123,8 @@ export function initMotion() {
       if (!target) return;
       event.preventDefault();
       const top = scrollY + target.getBoundingClientRect().top;
-      scrollPageTo(destination === "home" ? 0 : destination === "journey" ? Math.ceil(top) : top - 24);
+      const headerHeight = document.querySelector<HTMLElement>('.header')?.offsetHeight ?? 0;
+      scrollPageTo(destination === "home" ? 0 : destination === "journey" ? Math.ceil(top) : top - headerHeight);
       if (destination === "main") target.focus({ preventScroll: true });
     });
   });
@@ -194,10 +194,6 @@ export function initMotion() {
       const enter = range(innerHeight - box.top, 0, Math.min(innerHeight * 0.45, Math.max(1, box.height)));
       el.style.setProperty("--enter", String(reduced ? 1 : enter));
     }
-    const portalRect = portal.getBoundingClientRect();
-    const portalVisible = Math.max(0, Math.min(portalRect.bottom, innerHeight) - Math.max(portalRect.top, 0));
-    const portalRatio = portalVisible / Math.max(1, Math.min(portalRect.height, innerHeight));
-    portal.style.setProperty("--door-open", String(reduced ? 1 : range(portalRatio, 0.12, 0.68)));
   }
   function requestUpdate() { if (!frame) frame = requestAnimationFrame(update); }
   addEventListener("scroll", requestUpdate, { passive: true });
@@ -218,7 +214,10 @@ export function initMotion() {
     requestAnimationFrame(() => {
       try {
         const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
-        if (target) scrollTo({ top: scrollY + target.getBoundingClientRect().top, behavior: "instant" });
+        if (target) {
+          const offset = target.id === 'journey' ? 0 : document.querySelector<HTMLElement>('.header')?.offsetHeight ?? 0;
+          scrollTo({ top: Math.max(0, scrollY + target.getBoundingClientRect().top - offset), behavior: "instant" });
+        }
       } catch { /* A malformed fragment does not affect normal navigation. */ }
       requestUpdate();
     });

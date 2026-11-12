@@ -5,9 +5,11 @@ import { renderPage } from "./page";
 import { initMotion } from "./motion";
 import { initIslandInteractions } from "./island-interactions";
 import { initBrandIntro } from "./brand-intro";
-import { initContentMotion } from "./content-motion";
+import { initChapterReveal } from "./chapter-reveal";
+import { initNavigation } from "./navigation";
 import "./brand-intro.css";
 import "./content-motion.css";
+import "./refinement.css";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 // The production HTML already contains the page; only dev needs client rendering.
@@ -28,6 +30,15 @@ document.querySelector("#copy-email")!.addEventListener("click", async () => {
     notify("邮箱已复制，期待你的来信。");
   } catch {
     notify("请手动复制邮箱：miguchn@gmail.com");
+  }
+});
+document.querySelector('#copy-wechat')!.addEventListener('click', async () => {
+  const status = document.querySelector('.wechat-status')!;
+  try {
+    await navigator.clipboard.writeText('别动生产库');
+    status.textContent = translate('名称已复制，请在微信中搜索。');
+  } catch {
+    status.textContent = translate('请在微信中搜索：别动生产库');
   }
 });
 const menuButton = document.querySelector<HTMLButtonElement>(".menu-toggle")!;
@@ -65,5 +76,6 @@ window.matchMedia("(min-width: 701px)").addEventListener("change", (e) => {
 initLocale();
 document.body.classList.add("motion-ready");
 initMotion();
-initContentMotion();
+initNavigation();
+initChapterReveal();
 initBrandIntro();

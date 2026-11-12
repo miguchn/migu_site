@@ -1,6 +1,29 @@
 export type Locale = "zh" | "en";
 let locale: Locale = "zh";
 const messages: readonly (readonly [string, string])[] = [
+  ['创意交流、项目合作、开发需求或工作机会，欢迎联系。', 'Have an idea, a project, or a job opportunity? Get in touch.'],
+  ['滚动场景', 'Interactive scroll scene'],
+  ['纪念碑谷风格的几何场景，可与小黑和拱门互动', 'Geometric architecture. Interact with Xiaohei and the archway.'],
+  ['探索 AI 科技，分享 AI 乐趣。', 'Exploring AI technology. Sharing the fun.'],
+  ['我是小黑，一名喜欢探索 AI 的个人开发者。', 'I’m Xiaohei, an independent developer exploring AI.'],
+  ['这里展示我的项目，也分享一些开发中的发现。', 'Here are my projects and discoveries from building them.'],
+  ['继续向下浏览', 'Keep scrolling'],
+  ['给 AI 长对话加一条时间线，方便快速定位和回看关键内容。', 'A timeline for long AI conversations, making key moments easy to find and revisit.'],
+  ['使用 AI 检查代码改动，帮助发现潜在问题并生成审查建议。', 'Review code changes with AI to spot potential issues and suggest improvements.'],
+  ['整理和维护可复用的 AI 技能，减少重复操作，提高开发效率。', 'Reusable AI skills that cut repetitive work and make development more efficient.'],
+  ['查看开源项目', 'View on GitHub'],
+  ['平时喜欢研究新的 AI 产品和开发工具，遇到感兴趣的想法，就动手做出来试试。', 'I enjoy trying new AI products and developer tools. When an idea interests me, I build something to try it out.'],
+  ['小黑 / XIAOHEI', 'XIAOHEI'],
+  ['别动生产库公众号头像', 'Avatar for my WeChat publication'],
+  ['我的微信公众号', 'MY WECHAT PUBLICATION'],
+  ['别动生产库', 'Hands Off Production'],
+  ['欢迎在微信里搜索关注。', 'Search WeChat for “别动生产库” to follow.'],
+  ['复制公众号名称', 'Copy the Chinese WeChat name'],
+  ['复制名称', 'Copy name'],
+  ['名称已复制，请在微信中搜索。', 'Chinese name copied. Search for it in WeChat.'],
+  ['请在微信中搜索：别动生产库', 'Search WeChat for “别动生产库”.'],
+  ['交流 · 项目 · 合作', 'CONVERSATIONS · PROJECTS · COLLABORATIONS'],
+  ['页脚导航', 'Footer navigation'],
   ["品牌开场", "Brand introduction"],
   ["咪咕开口 M 标志", "Migu open-M logo"],
   ["好奇心，正在发生。", "Curiosity is taking shape."],
@@ -448,13 +471,13 @@ export function setLocale(next: Locale) {
     node.textContent = translate(original);
     rendered.set(node, node.textContent);
   }
-  document.querySelectorAll("[aria-label], [title]").forEach(element => {
+  document.querySelectorAll("[aria-label], [title], [alt]").forEach(element => {
     if (element.closest(".language-switch")) return;
     let saved = attributes.get(element);
     if (!saved) { saved = new Map(); attributes.set(element, saved); }
-    for (const name of ["aria-label", "title"]) {
+    for (const name of ["aria-label", "title", "alt"]) {
       const value = element.getAttribute(name);
-      if (value === null) continue;
+      if (value === null || value === '') continue;
       // Interactive labels can change between switches. Recover the Chinese source.
       const original = ordered.find(([, en]) => en === value)?.[0] ?? value;
       if (/[\u3400-\u9fff]/.test(original)) saved.set(name, original);

@@ -13,6 +13,10 @@ assert.equal((html.match(/<main\b/g) || []).length, 1);
 assert.equal((html.match(/<h1\b/g) || []).length, 1);
 const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1]);
 assert.equal(new Set(ids).size, ids.length, "Duplicate IDs");
+assert.ok(html.indexOf('id="projects"') < html.indexOf('id="explore"'), 'Projects precede exploration');
+assert.ok(html.includes('id="copy-wechat"') && html.includes('/wechat-avatar.jpg'), 'Publication has real assets and copy control');
+assert.ok(!html.includes('功能排版示意') && !html.includes('product-demo'), 'No prototype mock interfaces in production');
+for (const match of html.matchAll(/data-scroll="([^"]+)"/g)) assert.ok(ids.includes(match[1]), `Missing navigation target: ${match[1]}`);
 const schema = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1];
 assert.deepEqual(JSON.parse(schema)["@graph"].map((item) => item["@type"]), ["Person", "WebSite"]);
 const headers = await readFile(new URL("../dist/_headers", import.meta.url), "utf8");
@@ -151,7 +155,8 @@ try {
   const { translate } = await server.ssrLoadModule("/src/i18n.ts");
   const { renderPage } = await server.ssrLoadModule("/src/page.ts");
   const english = translate(renderPage(), "en");
-  const remaining = english.replace(/<div class="language-switch"[\s\S]*?<\/div>/, "").match(/[\u3400-\u9fff]+/g);
+  // The actual Chinese publication name is intentionally retained as a WeChat search query.
+  const remaining = english.replace(/<div class="language-switch"[\s\S]*?<\/div>/, "").replaceAll('“别动生产库”', '').match(/[\u3400-\u9fff]+/g);
   assert.equal(remaining, null, `Untranslated page text: ${remaining}`);
   assert.ok(english.includes("Curiosity"));
   assert.ok(english.includes("I’m Xiaohei"));

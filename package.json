@@ -7,7 +7,7 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && node scripts/build.mjs",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node scripts/check.mjs && node scripts/check-cat-3d.mjs && node scripts/check-cat-model.mjs && node scripts/check-cat-route.mjs"
+    "test": "node scripts/check.mjs && node scripts/check-navigation.mjs && node scripts/check-cat-3d.mjs && node scripts/check-cat-model.mjs && node scripts/check-cat-route.mjs"
   },
   "devDependencies": {
     "@types/three": "^0.186.0",
