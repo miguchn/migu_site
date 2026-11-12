@@ -109,7 +109,7 @@ body .header {
 /* The closing chapter and footer form a single composition. */
 .contact-band.footer { display: block; width: 100%; max-width: none; margin: 0; padding: 0; border: 0; min-height: 100svh; background: #203c32; color: #f7f5e9; position: relative; isolation: isolate; overflow: hidden; }
 .contact-band #contact { position: relative; min-height: 100svh; box-sizing: border-box; padding-top: 110px; padding-bottom: 0; margin: 0 auto; z-index: 0; display: flex; flex-direction: column; }
-.closing-top { display: flex; justify-content: space-between; align-items: center; gap: 50px; padding-bottom: 56px; }
+.closing-top { display: flex; justify-content: space-between; align-items: center; gap: 50px; padding-bottom: 36px; }
 .closing-kicker { font: 12px var(--mono); letter-spacing: 2px; color: #adbeac; margin-bottom: 28px; }
 .closing-brand { display: flex; align-items: center; gap: 18px; font-size: 32px; font-weight: 500; color: #fff9e8; }
 .closing-brand img, .closing-mark { filter: brightness(0) invert(1); }
@@ -181,7 +181,7 @@ html[lang="en"] .about-copy h2 { font-size: 38px; }
   .wechat-copy { margin-left: 72px; }
   .wechat-status { left: 16px; }
   .contact-band #contact { padding-top: 96px; }
-  .closing-top { flex-direction: column; align-items: flex-start; gap: 35px; padding-bottom: 32px; }
+  .closing-top { flex-direction: column; align-items: flex-start; gap: 35px; padding-bottom: 28px; }
   .closing-brand { font-size: 25px; }
   .closing-brand img { width: 42px; height: 42px; }
   .closing-email { text-align: left; }
