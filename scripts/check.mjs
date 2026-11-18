@@ -18,7 +18,9 @@ assert.ok(html.includes('id="copy-wechat"') && html.includes('/wechat-avatar.jpg
 assert.ok(!html.includes('功能排版示意') && !html.includes('product-demo'), 'No prototype mock interfaces in production');
 for (const match of html.matchAll(/data-scroll="([^"]+)"/g)) assert.ok(ids.includes(match[1]), `Missing navigation target: ${match[1]}`);
 const schema = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1];
-assert.deepEqual(JSON.parse(schema)["@graph"].map((item) => item["@type"]), ["Person", "WebSite"]);
+const schemaGraph = JSON.parse(schema)["@graph"];
+assert.deepEqual(schemaGraph.map((item) => item["@type"]), ["Person", "WebSite", "BreadcrumbList", "SoftwareSourceCode", "SoftwareSourceCode", "SoftwareSourceCode"]);
+assert.equal(schemaGraph.find((item) => item.name === "AI Code Review").programmingLanguage, "Java");
 const headers = await readFile(new URL("../dist/_headers", import.meta.url), "utf8");
 assert.ok(headers.includes(`'sha256-${createHash("sha256").update(schema).digest("base64")}'`));
 assert.ok(!headers.match(/script-src[^;]*'unsafe-inline'/));
@@ -48,6 +50,7 @@ class Element {
   };
   setAttribute(name, value) { this.attributes.set(name, value); }
   getAttribute(name) { return this.attributes.get(name) ?? null; }
+  removeAttribute(name) { this.attributes.delete(name); }
   addEventListener(name, handler) { this.handlers.set(name, handler); }
   closest() { return hero; }
   fire(name, fields = {}) {
@@ -57,6 +60,7 @@ class Element {
   }
 }
 const hero = new Element();
+const documentElement = new Element();
 const elements = new Map(["#scene", "#scene-cat", "#island-door", "#cat-speech", "#theme-button", "#scene-caption", "#cat-button", "#door-button", "#island-feedback"].map((id) => [id, new Element()]));
 const timers = new Map();
 let timerId = 0;
@@ -70,7 +74,7 @@ const { code } = await transformWithEsbuild(source, "island-interactions.ts", { 
 const sandbox = {
   exports: {}, module: { exports: {} },
   require: () => ({ translate: (message) => message }),
-  document: { querySelector: (selector) => elements.get(selector) },
+  document: { documentElement, querySelector: (selector) => elements.get(selector) },
   matchMedia: (query) => query.includes("max-width") ? mobile : reduced,
   setTimeout: (fn, delay) => { timers.set(++timerId, { fn, delay }); return timerId; },
   clearTimeout: (id) => timers.delete(id),
@@ -105,9 +109,12 @@ assert.equal(door.getAttribute("aria-pressed"), "false");
 assert.equal(notifications.length, 2);
 const theme = get("#theme-button");
 theme.fire("click");
+assert.ok(get("#scene").classes.has("night"));
+assert.ok(documentElement.classes.has("night-mode"), "Global night mode follows the island");
 theme.fire("click");
 flush();
 assert.ok(!get("#scene").classes.has("night"));
+assert.ok(!documentElement.classes.has("night-mode"), "Global night mode clears with daytime");
 assert.ok(!get("#scene").classes.has("cat-stargazing"), "Cancelled night timer must not apply in daytime");
 assert.equal(theme.getAttribute("aria-pressed"), "false");
 reduced.matches = true;
@@ -115,15 +122,17 @@ theme.fire("click");
 assert.ok([...timers.values()].some(({ delay }) => delay === 0));
 flush();
 assert.ok(get("#scene").classes.has("night"));
+assert.ok(documentElement.classes.has("night-mode"));
 assert.equal(theme.getAttribute("aria-label"), "切换到小岛日景");
 console.log("PASS: three cat responses, cleanup, repeated input, keyboard, door state and rapid day/night toggles");
 
 mobile.change(true);
-assert.equal(door.getAttribute("tabindex"), "-1");
-assert.equal(door.getAttribute("aria-hidden"), "true");
+assert.equal(door.getAttribute("tabindex"), "0");
+assert.equal(door.getAttribute("aria-hidden"), null);
 const wasOpen = door.getAttribute("aria-pressed");
 door.fire("click");
-assert.equal(door.getAttribute("aria-pressed"), wasOpen, "Phone SVG door must not steal the cat's touch target");
+assert.notEqual(door.getAttribute("aria-pressed"), wasOpen, "Phone SVG door remains interactive");
+assert.equal(door.getAttribute("aria-pressed"), get("#door-button").getAttribute("aria-pressed"));
 cat.fire("click");
 assert.equal(get("#cat-speech").textContent, "", "Phone feedback stays out of the SVG");
 assert.ok(get("#island-feedback").textContent.includes("喵"));
@@ -138,12 +147,13 @@ flush();
 assert.equal(get("#island-feedback").textContent, "晚安，宇宙。好奇心还醒着。");
 cat.fire("click");
 theme.fire("click");
+assert.ok(!documentElement.classes.has("night-mode"));
 assert.equal(get("#island-feedback").textContent, "在不可能的地方，发现可能。");
 flush();
 assert.equal(get("#island-feedback").textContent, "点点小黑，或试试开门和昼夜。");
 mobile.change(false);
 assert.equal(door.getAttribute("tabindex"), "0");
-assert.equal(door.getAttribute("aria-hidden"), "false");
+assert.equal(door.getAttribute("aria-hidden"), null);
 assert.equal(get("#cat-speech").textContent, "");
 console.log("PASS: mobile feedback races, restoration, synchronized door controls and viewport changes");
 

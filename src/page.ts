@@ -16,7 +16,9 @@ const projects = [
     name: "ChatLine",
     en: "A LITTLE ORDER IN THE CONVERSATION",
     description: "给 AI 长对话加一条时间线，方便快速定位和回看关键内容。",
+    highlight: "✦ 200+ 用户安装",
     tag: "浏览器扩展",
+    techStack: ["TypeScript", "Chrome Ext", "React"],
     url: "https://github.com/miguchn/ai-chatline",
     art: "portal",
     color: "rose",
@@ -25,7 +27,9 @@ const projects = [
     name: "AI Code Review",
     en: "ANOTHER PAIR OF EYES FOR YOUR CODE",
     description: "使用 AI 检查代码改动，帮助发现潜在问题并生成审查建议。",
+    highlight: "✦ PR / MR · 自动检查",
     tag: "AI · 开源工具",
+    techStack: ["Java", "Spring Boot", "Vue"],
     url: "https://github.com/miguchn/ai-code-review",
     art: "steps",
     color: "sage",
@@ -35,7 +39,9 @@ const projects = [
     en: "SMALL SKILLS, NEW POSSIBILITIES",
     description:
       "整理和维护可复用的 AI 技能，减少重复操作，提高开发效率。",
+    highlight: "✦ 持续维护 · 实战沉淀",
     tag: "Agent · 技能集",
+    techStack: ["AI Agent", "Prompt Eng."],
     url: "https://github.com/miguchn/migu_skill",
     art: "orb",
     color: "sand",
@@ -75,20 +81,27 @@ export function renderPage() {
     ${journeySection()}
     <section class="project-section section" id="projects" aria-labelledby="projects-title"><div class="wrap">
       <div class="section-heading"><div><p class="eyebrow section-number">01 / THINGS I'VE BUILT</p><h2 id="projects-title">把想法，做成作品。</h2></div><a class="text-link" href="https://github.com/miguchn" target="_blank" rel="noopener noreferrer">去 GitHub 串个门 ${external}</a></div>
-      <div class="project-grid">${projects.map((p, i) => `<a class="project-card" href="${p.url}" target="_blank" rel="noopener noreferrer"><div class="project-art ${p.color}"><span class="project-index" aria-hidden="true">PROJECT / 0${i + 1}</span>${miniScene(p.art)}</div><div class="project-details"><span class="project-tag">${p.tag}</span><h3>${p.name} ${external}</h3><p>${p.description}</p><span class="project-micro">查看开源项目</span></div></a>`).join("")}</div>
+      <div class="project-grid">${projects.map((p, i) => `<a class="project-card" href="${p.url}" target="_blank" rel="noopener noreferrer"><div class="project-art ${p.color}"><span class="project-index" aria-hidden="true">PROJECT / 0${i + 1}</span>${miniScene(p.art)}</div><div class="project-details"><span class="project-tag">${p.tag}</span><h3>${p.name} ${external}</h3><p>${p.description}</p><span class="project-highlight">${p.highlight}</span><div class="project-tech">${p.techStack.map(t => `<span>${t}</span>`).join("")}</div><span class="project-micro">查看开源项目</span></div></a>`).join("")}</div>
     </div></section>
     <section class="explore-section section wrap" id="explore" aria-labelledby="explore-title">
       <div class="section-heading"><div><p class="eyebrow section-number">02 / THE EXPLORATION</p><h2 id="explore-title">保持好奇，让想法发生。</h2></div><p class="section-intro">世界很大，值得探索的事情很多。<br/>我从三个方向出发：探索 AI、动手创造、分享发现。</p></div>
       <div class="explore-grid">
-        <article class="explore-item"><span class="topic-icon">${topicIcon('M12 2v20M2 12h20M5 5l14 14M5 19 19 5')}</span><span class="topic-number">01</span><h3>探索 AI 的可能</h3><p>走近新工具，也追问它能解决什么。<br/>从一次对话，到一个真正有用的应用。</p><span class="topic-label">AI EXPLORATION</span></article>
-        <article class="explore-item"><span class="topic-icon">${topicIcon('m8 6-6 6 6 6m8-12 6 6-6 6M14 3l-4 18')}</span><span class="topic-number">02</span><h3>把想法变成作品</h3><p>灵感不只留在备忘录。<br/>用代码搭起来，用起来，再慢慢打磨。</p><span class="topic-label">BUILD IN THE OPEN</span></article>
-        <article class="explore-item"><span class="topic-icon">${topicIcon('m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z')}</span><span class="topic-number">03</span><h3>分享路上的发现</h3><p>记录踩过的坑，也收藏偶然的惊喜。<br/>让一个人的探索，成为彼此的启发。</p><span class="topic-label">LEARN & SHARE</span></article>
+        <article class="explore-item"><span class="topic-icon">${topicIcon('M12 2v20M2 12h20M5 5l14 14M5 19 19 5')}</span><span class="topic-number">01</span><h3>探索 AI 的可能</h3><p>从提示词到 Agent，从对话到多模态。<br/>走近每一个新工具，追问它能解决什么真问题。</p><span class="topic-label">AI EXPLORATION</span></article>
+        <article class="explore-item"><span class="topic-icon">${topicIcon('m8 6-6 6 6 6m8-12 6 6-6 6M14 3l-4 18')}</span><span class="topic-number">02</span><h3>把想法变成作品</h3><p>白天是灵感，晚上变成 commit。<br/>把想法搭起来、用起来，一点一点打磨到顺手。</p><span class="topic-label">BUILD IN THE OPEN</span></article>
+        <article class="explore-item"><span class="topic-icon">${topicIcon('m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z')}</span><span class="topic-number">03</span><h3>分享路上的发现</h3><p>踩过的坑值得记录，偶然的惊喜值得收藏。<br/>一个人的探索，也许是另一个人的捷径。</p><span class="topic-label">LEARN & SHARE</span></article>
       </div>
     </section>
     <div class="about-band">
     <section class="about-section section wrap" id="about" aria-labelledby="about-title">
-      <div class="about-art"><span class="about-orbit orbit-one"></span><span class="about-orbit orbit-two"></span><div class="cat-portrait"><svg viewBox="-65 -85 130 120" aria-hidden="true">${catPortrait}</svg><span>小黑 / XIAOHEI</span></div><span class="orbit-note note-one">好奇心常驻 ✳</span><span class="orbit-note note-two">灵感偶尔出没</span><span class="about-art-caption">PERSONAL DEVELOPER · AI ENTHUSIAST</span></div>
-      <div class="about-copy"><p class="eyebrow section-number">03 / THE HUMAN BEHIND</p><h2 id="about-title">认真探索，<br/>也认真好玩。</h2><p>平时喜欢研究新的 AI 产品和开发工具，遇到感兴趣的想法，就动手做出来试试。</p><p>我喜欢把复杂的东西拆开，看看里面的齿轮；也喜欢把零散的灵感拼起来，做出一点新东西。</p><div class="about-tags"><span>AI 探索者</span><span>独立创造</span><span>终身好奇</span></div><div class="wechat-card"><img src="/wechat-avatar.jpg" width="72" height="72" loading="lazy" decoding="async" alt="别动生产库公众号头像"><div class="wechat-info"><span class="wechat-label">我的微信公众号</span><h3>别动生产库</h3><p>欢迎在微信里搜索关注。</p></div><button id="copy-wechat" class="wechat-copy" type="button" aria-label="复制公众号名称">复制名称</button><span class="wechat-status" role="status" aria-live="polite"></span></div></div>
+      <header class="about-intro"><p class="eyebrow section-number">03 / THE HUMAN BEHIND</p><h2 id="about-title"><span>认真探索，</span> <span>也认真好玩。</span></h2><p class="about-slogan">用 AI 和代码，让好奇心落地。</p></header>
+      <div class="about-left">
+        <div class="about-art"><span class="about-orbit orbit-one"></span><span class="about-orbit orbit-two"></span><div class="cat-portrait"><svg viewBox="-65 -85 130 120" aria-hidden="true">${catPortrait}</svg><span>小黑 / XIAOHEI</span></div><span class="orbit-note note-one">好奇心常驻 ✳</span><span class="orbit-note note-two">灵感偶尔出没</span></div>
+        <p class="about-art-caption">PERSONAL DEVELOPER · AI ENTHUSIAST</p>
+      </div>
+      <div class="about-copy"><div class="open-status"><span class="open-dot"></span>开放合作中</div><p>平时喜欢研究新的 AI 产品和开发工具，遇到感兴趣的想法，就动手做出来试试。</p><p>我喜欢把复杂的东西拆开，看看里面的齿轮；也喜欢把零散的灵感拼起来，做出一点新东西。</p><div class="about-tags"><span>AI 探索者</span><span>独立创造</span><span>终身好奇</span></div>
+        <div class="wechat-card"><img src="/wechat-avatar.jpg" width="72" height="72" loading="lazy" decoding="async" alt="别动生产库公众号头像"><div class="wechat-info"><span class="wechat-label">我的微信公众号</span><h3>别动生产库</h3><p>欢迎在微信里搜索关注。</p></div><button id="copy-wechat" class="wechat-copy" type="button" aria-label="复制公众号名称">复制名称</button><span class="wechat-status" role="status" aria-live="polite"></span></div>
+        <div class="skills-marquee" aria-label="技能与工具"><div class="skills-track"><span class="dev">TypeScript</span><span class="dev">JavaScript</span><span class="dev">Python</span><span class="dev">React</span><span class="dev">Vue</span><span class="dev">Node.js</span><span class="dev">Next.js</span><span class="dev">Three.js</span><span class="dev">Go</span><span class="dev">Tailwind</span><span class="dev">SQL</span><span class="dev">HTML / CSS</span><span class="dev">TypeScript</span><span class="dev">JavaScript</span><span class="dev">Python</span><span class="dev">React</span><span class="dev">Vue</span><span class="dev">Node.js</span><span class="dev">Next.js</span><span class="dev">Three.js</span><span class="dev">Go</span><span class="dev">Tailwind</span><span class="dev">SQL</span><span class="dev">HTML / CSS</span><span class="dev">TypeScript</span><span class="dev">JavaScript</span><span class="dev">Python</span><span class="dev">React</span><span class="dev">Vue</span><span class="dev">Node.js</span><span class="dev">Next.js</span><span class="dev">Three.js</span><span class="dev">Go</span><span class="dev">Tailwind</span><span class="dev">SQL</span><span class="dev">HTML / CSS</span></div><div class="skills-track reverse"><span class="ai">OpenAI / GPT</span><span class="ai">Claude</span><span class="ai">Gemini</span><span class="ai">Midjourney</span><span class="ai">Cursor</span><span class="ai">Stable Diffusion</span><span class="ai">LangChain</span><span class="ai">Docker</span><span class="ai">Git</span><span class="ai">Figma</span><span class="ai">Cloudflare</span><span class="ai">VS Code</span><span class="ai">OpenAI / GPT</span><span class="ai">Claude</span><span class="ai">Gemini</span><span class="ai">Midjourney</span><span class="ai">Cursor</span><span class="ai">Stable Diffusion</span><span class="ai">LangChain</span><span class="ai">Docker</span><span class="ai">Git</span><span class="ai">Figma</span><span class="ai">Cloudflare</span><span class="ai">VS Code</span><span class="ai">OpenAI / GPT</span><span class="ai">Claude</span><span class="ai">Gemini</span><span class="ai">Midjourney</span><span class="ai">Cursor</span><span class="ai">Stable Diffusion</span><span class="ai">LangChain</span><span class="ai">Docker</span><span class="ai">Git</span><span class="ai">Figma</span><span class="ai">Cloudflare</span><span class="ai">VS Code</span></div></div>
+      </div>
     </section>
     </div>
   </main>

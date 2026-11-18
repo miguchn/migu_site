@@ -68,21 +68,22 @@ export function initIslandInteractions(notify: (message: string) => void) {
     if (!mobile.matches) notify(message);
   }
   function syncLayout() {
-    door.setAttribute("tabindex", mobile.matches ? "-1" : "0");
-    door.setAttribute("aria-hidden", String(mobile.matches));
+    door.setAttribute("tabindex", "0");
+    door.removeAttribute("aria-hidden");
     speech.textContent = "";
     clearTimeout(feedbackTimer);
     feedback.textContent = translate(defaultFeedback());
   }
   activateWithKeyboard(cat, greet);
   document.querySelector<HTMLButtonElement>("#cat-button")!.addEventListener("click", greet);
-  activateWithKeyboard(door, () => { if (!mobile.matches) toggleDoor(); });
+  activateWithKeyboard(door, toggleDoor);
   doorButton.addEventListener("click", toggleDoor);
   mobile.addEventListener("change", syncLayout);
   syncLayout();
 
   themeButton.addEventListener("click", () => {
     const night = scene.classList.toggle("night");
+    document.documentElement.classList.toggle("night-mode", night);
     themeButton.setAttribute("aria-pressed", String(night));
     const label = translate(night ? "切换到小岛日景" : "切换到小岛夜景");
     themeButton.setAttribute("aria-label", label);

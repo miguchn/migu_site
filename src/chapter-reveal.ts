@@ -3,7 +3,7 @@ export function initChapterReveal() {
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
   if (reducedMotion.matches || !("IntersectionObserver" in window)) return;
   const elements = [...document.querySelectorAll<HTMLElement>(
-    ".section-heading, .project-card, .explore-item, .about-art, .about-copy, .closing-top, .closing-nav, .closing-meta",
+    ".section-heading, .project-card, .explore-item, .about-left, .about-copy, .closing-top, .closing-nav, .closing-meta",
   )];
   const pending = new Set<HTMLElement>();
   const observer = new IntersectionObserver(entries => {

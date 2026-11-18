@@ -58,11 +58,13 @@ export function restingProgress(p: number, direction: number) {
 export function initMotion() {
   const section = document.querySelector<HTMLElement>(".journey-section")!;
   const stage = document.querySelector<HTMLElement>(".journey-stage")!;
+  const perspective = section.querySelector<HTMLElement>(".journey-perspective")!;
   const world = document.querySelector<HTMLElement>(".journey-world")!;
   const bridge = document.querySelector<SVGGElement>(".journey-bridge")!;
   const bridgePivot = document.querySelector<SVGGElement>(".journey-bridge-pivot")!;
   const pieces = [...document.querySelectorAll<SVGGElement>("[data-build]")]
     .map((el) => ({ el, values: el.dataset.build!.split(",").map(Number) }));
+  const buildEnd = Math.max(0.40, ...pieces.map(({ values }) => values[1]));
   const copies = [...document.querySelectorAll<HTMLElement>(".chapter-copy")];
   const chapterButtons = [...document.querySelectorAll<HTMLButtonElement>("[data-chapter]")];
   const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
@@ -124,7 +126,8 @@ export function initMotion() {
       event.preventDefault();
       const top = scrollY + target.getBoundingClientRect().top;
       const headerHeight = document.querySelector<HTMLElement>('.header')?.offsetHeight ?? 0;
-      scrollPageTo(destination === "home" ? 0 : destination === "journey" ? Math.ceil(top) : top - headerHeight);
+      const pinnedJourney = destination === "journey" && !mobileJourney.matches && !reduceMotion.matches;
+      scrollPageTo(destination === "home" ? 0 : pinnedJourney ? Math.ceil(top) : top - headerHeight);
       if (destination === "main") target.focus({ preventScroll: true });
     });
   });
@@ -139,8 +142,12 @@ export function initMotion() {
     summit.tabIndex = showSummit ? 0 : -1;
     const rect = section.getBoundingClientRect();
     const p = clamp(-rect.top / Math.max(1, section.offsetHeight - innerHeight));
-    // Static layouts show a completed island. Desktop assembles directly under the scroll.
-    const builtProgress = fluid ? 1 : p;
+    let buildProgress = p;
+    if (!reduced && mobileJourney.matches) {
+      const scene = perspective.getBoundingClientRect();
+      // Assemble while the island moves through the lower and middle viewport.
+      buildProgress = buildEnd * range(innerHeight - scene.top, innerHeight * 0.28, innerHeight - 72);
+    }
     const sceneProgress = fluid ? 0 : p;
     const phase = Math.min(2, Math.floor(p * 3));
     const night = range(sceneProgress, 0.67, 0.97);
@@ -153,13 +160,22 @@ export function initMotion() {
     percent.textContent = String(Math.round(p * 100)).padStart(2, "0");
     scrollHint.style.opacity = String(1 - range(sceneProgress, 0.93, 0.99));
     world.style.transform = fluid ? "none" : `translate3d(0,${range(p, 0.65, 1) * -8}px,0)`;
-    for (const { el, values: [start, end, x, y] } of pieces) {
-      const t = fluid ? 1 : range(builtProgress, start, end);
-      el.style.opacity = String(t);
-      el.style.transform = `translate(${x * (1 - t)}px,${y * (1 - t)}px)`;
+    if (reduced) {
+      for (const { el } of pieces) {
+        el.style.removeProperty("opacity");
+        el.style.removeProperty("transform");
+      }
+      bridge.style.removeProperty("transform");
+      bridgePivot.style.removeProperty("opacity");
+    } else {
+      for (const { el, values: [start, end, x, y] } of pieces) {
+        const t = range(buildProgress, start, end);
+        el.style.opacity = String(t);
+        el.style.transform = `translate(${x * (1 - t)}px,${y * (1 - t)}px)`;
+      }
+      bridge.style.transform = `rotate(${-78 * (1 - range(buildProgress, 0.24, 0.40))}deg)`;
+      bridgePivot.style.opacity = String(range(buildProgress, 0.16, 0.23));
     }
-    bridge.style.transform = `rotate(${-78 * (1 - (fluid ? 1 : range(builtProgress, 0.24, 0.40)))}deg)`;
-    bridgePivot.style.opacity = String(fluid ? 1 : range(builtProgress, 0.16, 0.23));
     copies.forEach((copy, index) => {
       if (fluid) {
         copy.style.removeProperty("opacity");
@@ -215,7 +231,8 @@ export function initMotion() {
       try {
         const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
         if (target) {
-          const offset = target.id === 'journey' ? 0 : document.querySelector<HTMLElement>('.header')?.offsetHeight ?? 0;
+          const pinnedJourney = target === section && !mobileJourney.matches && !reduceMotion.matches;
+          const offset = pinnedJourney ? 0 : document.querySelector<HTMLElement>(".header")?.offsetHeight ?? 0;
           scrollTo({ top: Math.max(0, scrollY + target.getBoundingClientRect().top - offset), behavior: "instant" });
         }
       } catch { /* A malformed fragment does not affect normal navigation. */ }

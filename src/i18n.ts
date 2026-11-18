@@ -447,7 +447,19 @@ const messages: readonly (readonly [string, string])[] = [
   [
     "跳到主要内容",
     "Skip to main content"
-  ]
+  ],
+  ["✦ 200+ 用户安装", "✦ 200+ installs"],
+  ["✦ PR / MR · 自动检查", "✦ PR / MR · Automated review"],
+  ["✦ 持续维护 · 实战沉淀", "✦ Actively maintained"],
+  ["从提示词到 Agent，从对话到多模态。", "From prompts to agents, from chat to multimodal."],
+  ["走近每一个新工具，追问它能解决什么真问题。", "Leaning into every new tool, asking what real problems it can solve."],
+  ["白天是灵感，晚上变成 commit。", "Ideas by day, commits by night."],
+  ["把想法搭起来、用起来，一点一点打磨到顺手。", "Build it, ship it, then polish until it feels right."],
+  ["踩过的坑值得记录，偶然的惊喜值得收藏。", "Dead ends are worth documenting. Happy accidents, worth saving."],
+  ["一个人的探索，也许是另一个人的捷径。", "One explorer's detour might be another's shortcut."],
+  ["用 AI 和代码，让好奇心落地。", "Turning curiosity into reality, with AI and code."],
+  ["开放合作中", "Open to collaborate"],
+  ["技能与工具", "Skills & Tools"]
 ];
 const ordered = [...messages].sort((a, b) => b[0].length - a[0].length);
 export function translate(text: string, target: Locale = locale): string {
