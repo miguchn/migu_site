@@ -61,6 +61,7 @@ export function renderPage() {
     <nav id="mobile-nav" class="mobile-nav" aria-label="移动端导航" hidden><a href="#projects" data-scroll="projects">我的作品</a><a href="#explore" data-scroll="explore">探索方向</a><a href="#about" data-scroll="about">关于我</a><a href="#contact" data-scroll="contact">打个招呼</a></nav>
   </header>
   <main id="main" tabindex="-1">
+    <div class="home-screen">
     <section class="hero wrap" id="home" aria-labelledby="hero-title">
       <div class="hero-copy">
         <div class="eyebrow"><span class="live-dot"></span> HELLO, FELLOW EXPLORER <span class="eyebrow-line"></span></div>
@@ -78,6 +79,7 @@ export function renderPage() {
       </div>
     </section>
     <div class="below-hero wrap"><a href="#journey" data-scroll="journey"><span class="scroll-indicator" aria-hidden="true">↓</span><span>继续向下浏览</span></a><span aria-hidden="true">CODE · CREATE · WANDER</span></div>
+    </div>
     ${journeySection()}
     <section class="project-section section" id="projects" aria-labelledby="projects-title"><div class="wrap">
       <div class="section-heading"><div><p class="eyebrow section-number">01 / THINGS I'VE BUILT</p><h2 id="projects-title">把想法，做成作品。</h2></div><a class="text-link" href="https://github.com/miguchn" target="_blank" rel="noopener noreferrer">去 GitHub 串个门 ${external}</a></div>
