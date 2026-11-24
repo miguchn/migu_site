@@ -525,3 +525,74 @@ html[lang="en"] .hero-title-line { white-space: nowrap; }
   html[lang="en"] .brand-sub { letter-spacing: .8px; }
   html[lang="en"] .chapter-copy h2 { font-size: clamp(30px, 7.5vw, 44px); }
 }
+
+/* Keep the island and its character alive while they are on screen. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-art.is-in-view .floating-island,
+  .hero-art.is-in-view .floating-block {
+    animation: island-float 7s ease-in-out infinite;
+  }
+  .hero-art.is-in-view .block-two { animation-delay: -2.5s; }
+  .hero-art.is-in-view .cloud { animation: cloud-drift 12s ease-in-out infinite; }
+  .hero-art.is-in-view .cloud-front { animation-duration: 10s; animation-direction: reverse; }
+  .hero-art.is-in-view .flag {
+    transform-box: fill-box;
+    transform-origin: left center;
+    animation: flag-flutter 5s ease-in-out infinite;
+  }
+  .hero-art.is-in-view .stair-light { animation: stair-glint 4.8s linear infinite; }
+  .hero-art.is-in-view #scene-cat .cat-eyes,
+  .about-art.is-in-view .cat-portrait .cat-eyes {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: cat-blink 7s infinite;
+  }
+  .hero-art.is-in-view #scene-cat .cat-tail,
+  .about-art.is-in-view .cat-portrait .cat-tail {
+    transform-box: view-box;
+    transform-origin: 11px -4px;
+    animation: tail-sway 4s ease-in-out infinite;
+  }
+  .hero-art.is-in-view #scene-cat:not([data-pose]) .cat-body {
+    transform-box: fill-box;
+    transform-origin: center bottom;
+    animation: cat-breathe 3.6s ease-in-out infinite;
+  }
+  .about-art.is-in-view .cat-portrait .cat-head {
+    transform-box: fill-box;
+    transform-origin: center 90%;
+    animation: cat-sway 6s ease-in-out infinite;
+  }
+  .below-hero.is-in-view .scroll-indicator {
+    display: inline-block;
+    animation: scroll-cue 2.8s ease-in-out infinite;
+  }
+  body:not(.brand-intro-active) .hero-copy.is-in-view .title-mark path {
+    stroke-dasharray: 220;
+    animation: title-underline 520ms var(--motion-ease) 180ms both;
+  }
+}
+
+@keyframes island-float { 50% { translate: 0 -8px; } }
+@keyframes cloud-drift { 50% { translate: 12px 0; } }
+@keyframes flag-flutter { 50% { scale: .86 1; } }
+@keyframes stair-glint {
+  0% { stroke-dashoffset: 260; opacity: 0; }
+  8%, 46% { opacity: .95; }
+  55%, 100% { stroke-dashoffset: 0; opacity: 0; }
+}
+@keyframes cat-blink {
+  0%, 43%, 47%, 80%, 84%, 100% { scale: 1 1; }
+  45%, 82% { scale: 1 .07; }
+}
+@keyframes tail-sway {
+  0%, 100% { rotate: -4deg; }
+  50% { rotate: 8deg; }
+}
+@keyframes cat-breathe { 50% { scale: 1 1.035; } }
+@keyframes cat-sway {
+  0%, 100% { rotate: -3deg; }
+  50% { rotate: 4deg; }
+}
+@keyframes scroll-cue { 50% { translate: 0 4px; } }
+@keyframes title-underline { from { stroke-dashoffset: 220; } }

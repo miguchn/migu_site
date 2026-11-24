@@ -94,11 +94,11 @@ initNavigation();
 initChapterReveal();
 initBrandIntro();
 
-const skills = document.querySelector<HTMLElement>(".skills-list");
-if (skills && "IntersectionObserver" in window) {
-  skills.classList.add("is-marquee");
-  const observer = new IntersectionObserver(([entry]) => {
-    skills.classList.toggle("is-in-view", entry.isIntersecting);
+if ("IntersectionObserver" in window) {
+  document.querySelector(".skills-list")?.classList.add("is-marquee");
+  const observer = new IntersectionObserver(entries => {
+    for (const entry of entries) entry.target.classList.toggle("is-in-view", entry.isIntersecting);
   });
-  observer.observe(skills);
+  document.querySelectorAll(".hero-art, .hero-copy, .about-art, .below-hero, .skills-list")
+    .forEach(element => observer.observe(element));
 }
