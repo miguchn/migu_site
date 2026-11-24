@@ -1,0 +1,82 @@
+:root {
+  --motion-fast: 160ms;
+  --motion-normal: 260ms;
+  --motion-scene: 380ms;
+  --motion-ease: cubic-bezier(.22, 1, .36, 1);
+}
+
+.nav-contact,
+.language-switch button,
+.mobile-nav a,
+.scene-controls button,
+.wechat-copy {
+  transition:
+    color var(--motion-fast) var(--motion-ease),
+    background-color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    scale var(--motion-fast) var(--motion-ease);
+}
+
+:is(.button, .menu-toggle, .language-switch button, .scene-controls button, .copy-email, .wechat-copy, .journey-chapters button):active {
+  scale: .97;
+}
+:is(.button, .menu-toggle, .copy-email, .journey-chapters button) {
+  transition-property: background-color, color, border-color, transform, scale;
+  transition-duration: var(--motion-fast);
+  transition-timing-function: var(--motion-ease);
+}
+
+.language-switch button { font-weight: 700; text-decoration: underline transparent; text-underline-offset: 5px; }
+.language-switch button[aria-pressed="true"] { text-decoration-color: currentColor; }
+
+#theme-button svg { grid-area: 1 / 1; transition: opacity var(--motion-normal) var(--motion-ease), rotate var(--motion-normal) var(--motion-ease); }
+#theme-button .theme-moon { opacity: 0; rotate: -22deg; }
+#theme-button[aria-pressed="true"] .theme-moon { opacity: 1; rotate: 0deg; }
+#theme-button[aria-pressed="true"] .theme-sun { opacity: 0; rotate: 22deg; }
+#cat-speech:not(:empty) { animation: chapter-arrive var(--motion-normal) var(--motion-ease); }
+
+.scene .cloud { transition: opacity var(--motion-scene) var(--motion-ease); }
+:where(.hero h1, .section-heading h2, .explore-item h3, .about-intro h2, .wechat-info h3,
+  .scene-controls, .hero-copy, .hero-english, .hero-description, .below-hero, .project-section,
+  .project-art, .project-details h3, .project-details p, .project-tech span,
+  .explore-item, .explore-item p, .explore-grid, .topic-icon, .about-band,
+  .about-copy > p, .about-orbit, .orbit-note, .wechat-card, .wechat-status,
+  .skills-track span, .open-status, .about-tags span) {
+  transition:
+    color var(--motion-scene) var(--motion-ease),
+    background-color var(--motion-scene) var(--motion-ease),
+    border-color var(--motion-scene) var(--motion-ease);
+}
+.nav-contact[aria-current="location"] { box-shadow: inset 0 0 0 1px currentColor; }
+.night-mode .mobile-nav { background: #1a2e28; border-color: #3a5a4a; }
+.night-mode .mobile-nav a:hover,
+.night-mode .scene-controls button:is(:hover, [aria-pressed="true"]) { background: #314f41; }
+.night-mode :is(.scene-controls button, .wechat-copy, .wechat-status) { color: #c8d8c0; }
+
+@media (max-width: 700px) {
+  .mobile-nav:not([hidden]) {
+    opacity: 1;
+    visibility: visible;
+    translate: 0 0;
+    transform-origin: top center;
+    max-height: calc(100dvh - 84px);
+    overflow: auto;
+    transition:
+      opacity var(--motion-normal) var(--motion-ease),
+      translate var(--motion-normal) var(--motion-ease),
+      visibility var(--motion-normal),
+      background-color var(--motion-scene) var(--motion-ease);
+  }
+  .mobile-nav[inert] { opacity: 0; visibility: hidden; translate: 0 -6px; }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .project-card:hover, .button-dark:hover, .project-card:hover .project-art > svg { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.button, .menu-toggle, .language-switch button, .scene-controls button, .copy-email, .wechat-copy, .journey-chapters button):active {
+    scale: 1;
+  }
+  #theme-button svg { rotate: none; }
+}

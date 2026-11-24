@@ -1,27 +1,5 @@
 /* Scroll choreography and the island's black-cat identity. */
 .hero-title-line { display: block; }
-@media (prefers-reduced-motion: no-preference) {
-  .hero-title-line { animation: title-arrive .85s cubic-bezier(.2,.7,.2,1) both; }
-  .hero-title-line + .hero-title-line { animation-delay: .14s; }
-  .title-mark path { stroke-dasharray: 220; stroke-dashoffset: 220; animation: mark-draw .9s ease .55s forwards; }
-  .stair-light { animation: stair-light 2.8s ease-in-out .9s both; }
-  .hero-art:is(:hover, :focus-within, .is-greeting) .stair-light { animation: stair-light-repeat 3.2s ease-in-out infinite; }
-}
-@keyframes title-arrive {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes mark-draw { to { stroke-dashoffset: 0; } }
-@keyframes stair-light {
-  0% { stroke-dashoffset: 260; opacity: 0; }
-  15%, 80% { opacity: .9; }
-  100% { stroke-dashoffset: 0; opacity: 0; }
-}
-@keyframes stair-light-repeat {
-  0% { stroke-dashoffset: 260; opacity: 0; }
-  15%, 80% { opacity: .9; }
-  100% { stroke-dashoffset: 0; opacity: 0; }
-}
 .hero-description,
 .explore-item p,
 .project-details p,
@@ -33,50 +11,25 @@
 }
 .hero-art {
   overflow: clip;
-  --pointer-x: 0deg;
-  --pointer-y: 0deg;
   perspective: 1100px;
 }
 .hero-art .scene {
-  transform: translateY(var(--hero-shift, 0px)) rotateY(var(--pointer-x))
-    rotateX(var(--pointer-y)) rotateZ(var(--hero-turn, 0deg));
-  transition:
-    transform 0.15s ease-out,
-    background 1s;
+  transform: translateY(var(--hero-shift, 0px)) rotateZ(var(--hero-turn, 0deg));
   transform-origin: 50% 65%;
 }
-.cat-eyes {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: cat-blink 7s infinite;
+@media (hover: hover) and (pointer: fine) {
+  .cat-portrait:hover .cat-paw {
+    transform-box: fill-box;
+    transform-origin: 50% 10%;
+    animation: paw-hello 600ms var(--motion-ease);
+  }
 }
-.cat-tail {
-  transform-box: view-box;
-  transform-origin: 11px -4px;
-  animation: tail-sway 4s ease-in-out infinite;
-}
-.cat-walking .cat-tail,
-.cat-walking .cat-tail-sway {
-  animation: none;
-}
-.cat-portrait .cat-head {
-  transform-box: fill-box;
-  transform-origin: center 90%;
-  animation: cat-think 6s ease-in-out infinite;
-}
-.cat-portrait:hover .cat-paw {
-  transform-box: fill-box;
-  transform-origin: 50% 10%;
-  animation: paw-hello 0.6s ease-in-out 3;
-}
-.cat-portrait:hover .cat-eyes {
-  animation: cat-blink 1.2s infinite;
-}
-.brand:hover .cat-head {
-  transform: rotate(-6deg);
+.brand .cat-head {
   transform-box: fill-box;
   transform-origin: 50% 85%;
+  transition: transform var(--motion-normal) var(--motion-ease);
 }
+.brand:is(:hover, :focus-visible) .cat-head { transform: rotate(-6deg); }
 .cat-portrait {
   background: radial-gradient(ellipse at 36% 27%, #f4e8ce, #d9dfca 80%);
   box-shadow:
@@ -90,7 +43,6 @@
 .project-art .mini-sculpture {
   transform-origin: 150px 150px;
   transform: translateY(calc((1 - var(--enter, 1)) * 18px));
-  will-change: transform;
 }
 .project-card:nth-child(2) .mini-sculpture {
   transform: translateY(calc((1 - var(--enter, 1)) * 18px));
@@ -162,7 +114,7 @@
   width: 50%;
   background: linear-gradient(90deg, #d4a78d, #e1b99d);
   backface-visibility: hidden;
-  transition: transform .85s cubic-bezier(.22, .61, .36, 1);
+  transition: transform var(--motion-scene) var(--motion-ease);
 }
 .door-left {
   left: 0;
@@ -212,38 +164,6 @@
   bottom: -57px;
   left: -37px;
   right: -37px;
-}
-@keyframes cat-blink {
-  0%,
-  43%,
-  47%,
-  80%,
-  84%,
-  100% {
-    transform: scaleY(1);
-  }
-  45%,
-  82% {
-    transform: scaleY(0.07);
-  }
-}
-@keyframes tail-sway {
-  0%,
-  100% {
-    transform: rotate(-5deg);
-  }
-  50% {
-    transform: rotate(10deg);
-  }
-}
-@keyframes cat-think {
-  0%,
-  100% {
-    transform: rotate(-3deg);
-  }
-  50% {
-    transform: rotate(5deg);
-  }
 }
 @keyframes paw-hello {
   0%,
@@ -340,7 +260,6 @@
 /* The scroll invitation belongs inside the first view, not below a tall canvas. */
 .hero-scroll-cue { display: none; }
 .below-hero a { min-height: 28px; }
-.scroll-indicator { animation: cue-drift 2.5s ease-in-out infinite; }
 .back-top {
   display: inline-flex;
   align-items: center;
@@ -353,7 +272,7 @@
 }
 .back-top svg { width: 36px; height: 42px; }
 .back-top-note { display: block; margin-top: 5px; font-size: 9px; letter-spacing: .5px; opacity: .7; }
-.summit-arrow { transition: transform .25s ease; }
+.summit-arrow { transition: transform var(--motion-normal) var(--motion-ease); }
 .back-top:hover .summit-arrow, .summit-link:hover .summit-arrow { transform: translateY(-3px); }
 .summit-link {
   position: fixed;
@@ -378,12 +297,11 @@
   opacity: 0;
   visibility: hidden;
   transform: translateY(8px);
-  transition: opacity .25s, transform .25s, visibility .25s;
+  transition: opacity var(--motion-normal) var(--motion-ease), transform var(--motion-normal) var(--motion-ease), visibility var(--motion-normal);
 }
 .summit-link[hidden] { display: none; }
 .summit-link.is-visible { opacity: 1; visibility: visible; transform: translateY(0); }
 .summit-link svg { width: 31px; height: 39px; }
-@keyframes cue-drift { 0%,100% { transform: translateY(-2px); } 50% { transform: translateY(4px); } }
 @media (min-width: 701px) {
   .hero {
     min-height: calc(100svh - 172px);
@@ -421,7 +339,7 @@
     letter-spacing: .8px;
   }
   .cue-line { width: 22px; border-top: 1px solid #a9b29a; }
-  .cue-arrow { color: #a86e58; font-size: 19px; animation: cue-drift 2.5s ease-in-out infinite; }
+  .cue-arrow { color: #a86e58; font-size: 19px; }
   .hero-note { margin-top: 8px; }
   .below-hero { display: none; }
   .summit-link { right: 12px; bottom: 16px; width: 44px; min-height: 52px; border-radius: 24px 24px 5px 5px; }
@@ -475,33 +393,33 @@
 #scene-cat .cat-head {
   transform-box: fill-box;
   transform-origin: 50% 90%;
-  transition: transform .6s ease;
+  transition: transform var(--motion-scene) var(--motion-ease);
 }
 .cat-stargazing #scene-cat .cat-head { transform: rotate(-10deg) translateY(-2px); }
 #scene-cat[data-pose="wave"] .cat-paw {
   transform-box: fill-box;
   transform-origin: 50% 10%;
-  animation: island-wave .7s ease-in-out 2;
+  animation: island-wave 600ms var(--motion-ease) 1;
 }
-#scene-cat[data-pose="tilt"] .cat-head { animation: island-tilt 1.8s ease-in-out; }
+#scene-cat[data-pose="tilt"] .cat-head { animation: island-tilt 900ms var(--motion-ease); }
 #scene-cat[data-pose="stretch"] .cat-body {
   transform-box: fill-box;
   transform-origin: center bottom;
-  animation: island-stretch 1.8s ease-in-out;
+  animation: island-stretch 900ms var(--motion-ease);
 }
-.scene-stars { opacity: .35; transition: opacity .9s ease, stroke .9s ease; }
-.night .scene-stars { opacity: 1; stroke: #ffedbf; transition-delay: .65s; }
-.scene-window { transition: fill .8s ease; }
-.night .window-one { fill: #ffe4a0; transition-delay: .3s; }
-.night .window-two { fill: #ffe4a0; transition-delay: .6s; }
+.scene-stars { opacity: .35; transition: opacity var(--motion-scene) var(--motion-ease), stroke var(--motion-scene) var(--motion-ease); }
+.night .scene-stars { opacity: 1; stroke: #ffedbf; transition-delay: 60ms; }
+.scene-window { transition: fill var(--motion-scene) var(--motion-ease); }
+.night .window-one { fill: #ffe4a0; transition-delay: 40ms; }
+.night .window-two { fill: #ffe4a0; transition-delay: 80ms; }
 .island-door-leaf, .door-handle {
   transform-box: view-box;
   transform-origin: 5px 40px;
-  transition: transform .65s ease, fill .8s ease;
+  transition: transform var(--motion-scene) var(--motion-ease), fill var(--motion-scene) var(--motion-ease);
 }
-.door-light { opacity: .15; transition: opacity .65s ease; }
-.night .door-light { opacity: 1; transition-delay: .45s; }
-.night .island-door-leaf { fill: #d5ac78; transition-delay: .45s; }
+.door-light { opacity: .15; transition: opacity var(--motion-scene) var(--motion-ease); }
+.night .door-light { opacity: 1; }
+.night .island-door-leaf { fill: #d5ac78; }
 .door-open #island-door-art .door-light { opacity: 1; transition-delay: 0s; }
 .door-open #island-door-art :is(.island-door-leaf, .door-handle) { transform: scaleX(.08); }
 @keyframes island-wave {

@@ -11,7 +11,6 @@ export function brandIntroMarkup() {
       <svg class="brand-intro-logo" viewBox="0 0 128 128" role="img" aria-label="${translate("咪咕开口 M 标志")}">
         <defs>${slices.map(([x, width], i) => `<clipPath id="brand-intro-slice-${i}"><rect x="${x}" y="0" width="${width}" height="128"/></clipPath>`).join("")}</defs>
         ${slices.map((_, i) => `<g class="brand-intro-piece brand-intro-piece-${i}"><path clip-path="url(#brand-intro-slice-${i})" d="${logoPath}"/></g>`).join("")}
-        <path class="brand-intro-complete" d="${logoPath}"/>
       </svg>
       <p>好奇心，正在发生。</p>
     </div>
@@ -50,6 +49,7 @@ export function initBrandIntro() {
     intro!.classList.remove("brand-intro-leaving");
     document.body.classList.remove("brand-intro-active");
     releaseBackground();
+    if (wasOpen) dispatchEvent(new Event("brandintroend"));
     leaving = false;
     if (focus && wasOpen) restoreFocus?.focus({ preventScroll: true });
     restoreFocus = null;
@@ -61,7 +61,7 @@ export function initBrandIntro() {
     intro!.classList.add("brand-intro-leaving");
     document.body.classList.remove("brand-intro-active");
     document.body.classList.add("brand-intro-entered");
-    finishTimer = setTimeout(finish, reduced.matches ? 0 : 350);
+    finishTimer = setTimeout(finish, reduced.matches ? 0 : 260);
   }
   function start() {
     if (reduced.matches) { finish(); return; }
@@ -76,18 +76,21 @@ export function initBrandIntro() {
     safetyTimer = setTimeout(finish, 1800);
     document.body.classList.remove("brand-intro-entered");
     intro!.hidden = false;
-    intro!.getAnimations({ subtree: true }).forEach(animation => animation.cancel());
-    void intro!.offsetWidth;
     document.body.classList.add("brand-intro-active");
     skip!.focus({ preventScroll: true });
-    exitTimer = setTimeout(enter, 850);
+    exitTimer = setTimeout(enter, 570);
     try { sessionStorage.setItem(storageKey, "1"); } catch { /* Storage is optional. */ }
   }
 
   skip.addEventListener("click", enter);
+  for (const event of ["wheel", "touchmove"]) {
+    intro.addEventListener(event, input => input.preventDefault(), { passive: false });
+  }
+  const scrollKeys = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"]);
   document.addEventListener("keydown", event => {
     if (intro.hidden) return;
     if (event.key === "Escape") { event.preventDefault(); enter(); }
+    if (scrollKeys.has(event.key)) event.preventDefault();
     if (event.key === "Tab") { event.preventDefault(); skip.focus({ preventScroll: true }); }
   });
   reduced.addEventListener("change", () => {

@@ -20,6 +20,7 @@ const messages: readonly (readonly [string, string])[] = [
   ['欢迎在微信里搜索关注。', 'Search WeChat for “别动生产库” to follow.'],
   ['复制公众号名称', 'Copy the Chinese WeChat name'],
   ['复制名称', 'Copy name'],
+  ["已复制邮箱地址。", "Email address copied."],
   ['名称已复制，请在微信中搜索。', 'Chinese name copied. Search for it in WeChat.'],
   ['请在微信中搜索：别动生产库', 'Search WeChat for “别动生产库”.'],
   ['交流 · 项目 · 合作', 'CONVERSATIONS · PROJECTS · COLLABORATIONS'],
@@ -462,10 +463,11 @@ const messages: readonly (readonly [string, string])[] = [
   ["技能与工具", "Skills & Tools"]
 ];
 const ordered = [...messages].sort((a, b) => b[0].length - a[0].length);
+const translations = new Map(ordered);
+const sourceText = new Map([...ordered].reverse().map(([zh, en]) => [en, zh]));
+const translationPattern = new RegExp(ordered.map(([zh]) => zh.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"), "g");
 export function translate(text: string, target: Locale = locale): string {
-  if (target === "zh") return text;
-  // A single pass prevents shorter entries from translating parts of an earlier result.
-  return text.replace(new RegExp(ordered.map(([zh]) => zh.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"), "g"), match => ordered.find(([zh]) => zh === match)![1]);
+  return target === "zh" ? text : text.replace(translationPattern, match => translations.get(match)!);
 }
 const originals = new WeakMap<Node, string>();
 const rendered = new WeakMap<Node, string>();
@@ -478,10 +480,11 @@ export function setLocale(next: Locale) {
   while ((node = walker.nextNode())) {
     if (node.parentElement?.closest("script, style, .language-switch")) continue;
     const value = node.textContent!;
-    const original = rendered.get(node) === value ? originals.get(node)! : ordered.find(([, en]) => en === value)?.[0] ?? value;
+    const original = rendered.get(node) === value ? originals.get(node)! : sourceText.get(value) ?? value;
     originals.set(node, original);
-    node.textContent = translate(original);
-    rendered.set(node, node.textContent);
+    const translation = translate(original);
+    if (translation !== value) node.textContent = translation;
+    rendered.set(node, translation);
   }
   document.querySelectorAll("[aria-label], [title], [alt]").forEach(element => {
     if (element.closest(".language-switch")) return;
@@ -491,7 +494,7 @@ export function setLocale(next: Locale) {
       const value = element.getAttribute(name);
       if (value === null || value === '') continue;
       // Interactive labels can change between switches. Recover the Chinese source.
-      const original = ordered.find(([, en]) => en === value)?.[0] ?? value;
+      const original = sourceText.get(value) ?? value;
       if (/[\u3400-\u9fff]/.test(original)) saved.set(name, original);
       element.setAttribute(name, translate(saved.get(name) ?? original));
     }
@@ -513,6 +516,12 @@ export function initLocale() {
     const saved = localStorage.getItem("migu-locale");
     preferred = saved === "en" || saved === "zh" ? saved : navigator.language.toLowerCase().startsWith("zh") ? "zh" : "en";
   } catch { preferred = navigator.language.toLowerCase().startsWith("zh") ? "zh" : "en"; }
-  document.querySelectorAll<HTMLButtonElement>("[data-locale]").forEach(button => button.addEventListener("click", () => setLocale(button.dataset.locale as Locale)));
+  document.querySelectorAll<HTMLButtonElement>("[data-locale]").forEach(button => button.addEventListener("click", () => {
+    const next = button.dataset.locale as Locale;
+    if (next === locale) return;
+    setLocale(next);
+    // Translation can reflow sections underneath a stationary viewport.
+    dispatchEvent(new Event("localechange"));
+  }));
   setLocale(preferred);
 }

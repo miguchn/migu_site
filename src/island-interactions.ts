@@ -1,6 +1,6 @@
 import { translate } from "./i18n";
 /** Small discoveries, with a single predictable feedback location on phones. */
-export function initIslandInteractions(notify: (message: string) => void) {
+export function initIslandInteractions(notify: (message: string) => void, setFeedback = (element: HTMLElement, text: string) => { element.textContent = text; }) {
   const scene = document.querySelector<HTMLElement>("#scene")!;
   const cat = document.querySelector<SVGGElement>("#scene-cat")!;
   const door = document.querySelector<SVGGElement>("#island-door")!;
@@ -19,6 +19,7 @@ export function initIslandInteractions(notify: (message: string) => void) {
   let greetingIndex = 0;
   let greetingTimer: ReturnType<typeof setTimeout> | undefined;
   let feedbackTimer: ReturnType<typeof setTimeout> | undefined;
+  let gestureTimer: ReturnType<typeof setTimeout> | undefined;
   let nightTimer: ReturnType<typeof setTimeout> | undefined;
 
   function defaultFeedback() {
@@ -28,20 +29,20 @@ export function initIslandInteractions(notify: (message: string) => void) {
   }
   function showFeedback(message: string) {
     clearTimeout(feedbackTimer);
-    feedback.textContent = translate(message);
-    feedbackTimer = setTimeout(() => { feedback.textContent = translate(defaultFeedback()); }, 3000);
+    setFeedback(feedback, translate(message));
+    feedbackTimer = setTimeout(() => { setFeedback(feedback, translate(defaultFeedback())); }, 3000);
   }
   function clearGreeting() {
     delete cat.dataset.pose;
-    scene.closest(".hero-art")!.classList.remove("is-greeting");
     speech.textContent = "";
   }
   function greet() {
     if (cat.dataset.pose) return; // Let the current gesture finish before a new one.
     const greeting = greetings[greetingIndex++ % greetings.length];
     cat.dataset.pose = greeting.pose;
-    scene.closest(".hero-art")!.classList.add("is-greeting");
     speech.textContent = mobile.matches ? "" : translate(greeting.text);
+    clearTimeout(gestureTimer);
+    gestureTimer = setTimeout(() => { delete cat.dataset.pose; }, reduced.matches ? 0 : greeting.pose === "wave" ? 600 : 900);
     showFeedback(greeting.text);
     clearTimeout(greetingTimer);
     greetingTimer = setTimeout(clearGreeting, 2600);
@@ -93,6 +94,6 @@ export function initIslandInteractions(notify: (message: string) => void) {
     showFeedback(caption.textContent!);
     clearTimeout(nightTimer);
     scene.classList.remove("cat-stargazing");
-    if (night) nightTimer = setTimeout(() => scene.classList.add("cat-stargazing"), reduced.matches ? 0 : 850);
+    if (night) nightTimer = setTimeout(() => scene.classList.add("cat-stargazing"), reduced.matches ? 0 : 160);
   });
 }

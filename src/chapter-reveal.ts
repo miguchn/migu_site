@@ -11,23 +11,35 @@ export function initChapterReveal() {
       if (!entry.isIntersecting) continue;
       reveal(entry.target as HTMLElement);
     }
-  }, { threshold: 0.08, rootMargin: "0px 0px -24px 0px" });
+  }, { threshold: 0.08, rootMargin: "0px 0px -4px 0px" });
 
   function reveal(element: HTMLElement) {
-    element.classList.add("chapter-visible");
+    element.classList.remove("chapter-reveal");
+    if (!reducedMotion.matches && !element.contains(document.activeElement)) {
+      element.classList.add("chapter-visible");
+    }
     pending.delete(element);
     observer.unobserve(element);
   }
 
-  for (const [index, element] of elements.entries()) {
+  for (const element of elements) {
     // Do not conceal visible content, including restored deep-link destinations.
     if (element.getBoundingClientRect().top < innerHeight) continue;
     element.classList.add("chapter-reveal");
-    element.style.setProperty("--reveal-delay", `${element.matches(".project-card, .explore-item") ? (index % 3) * 65 : 0}ms`);
     pending.add(element);
     observer.observe(element);
     // Keyboard users must never land on an invisible control during its delay.
-    element.addEventListener("focusin", () => reveal(element), { once: true });
+    element.addEventListener("focusin", () => {
+      reveal(element);
+      element.classList.remove("chapter-visible");
+    }, { once: true });
+    function finishReveal(event: AnimationEvent) {
+      if (event.target === element && event.animationName === "chapter-arrive") {
+        element.classList.remove("chapter-visible");
+      }
+    }
+    element.addEventListener("animationend", finishReveal);
+    element.addEventListener("animationcancel", finishReveal);
   }
 
   reducedMotion.addEventListener("change", () => {

@@ -79,39 +79,36 @@ export function initMotion() {
   let frame = 0;
   let scrollAnimation = 0;
   let activeChapter = -1;
-  const root = document.documentElement;
-  let restoreScrollBehavior = () => {};
+  let activeProgress = -1;
+  let activeBuildProgress = -1;
+  let wasFluid: boolean | undefined;
+  let summitVisible: boolean | undefined;
+  let previousHeroExit = -1;
 
   function stopScrollAnimation() {
     cancelAnimationFrame(scrollAnimation);
-    restoreScrollBehavior();
+    scrollAnimation = 0;
     removeEventListener("wheel", stopScrollAnimation);
-    removeEventListener("touchstart", stopScrollAnimation);
+    removeEventListener("pointerdown", stopScrollAnimation);
     removeEventListener("keydown", stopScrollAnimation);
   }
   function scrollPageTo(top: number) {
     stopScrollAnimation();
-    const previous = root.style.scrollBehavior;
-    root.style.scrollBehavior = "auto";
-    restoreScrollBehavior = () => {
-      root.style.scrollBehavior = previous;
-      restoreScrollBehavior = () => {};
-    };
+    top = clamp(top, 0, document.documentElement.scrollHeight - innerHeight);
     if (reduceMotion.matches || Math.abs(top - scrollY) < 1) {
-      scrollTo(0, top);
-      restoreScrollBehavior();
+      scrollTo({ top, behavior: "instant" });
       return;
     }
     const start = scrollY;
     const change = top - start;
-    const duration = Math.min(720, 280 + Math.abs(change) * 0.2);
+    const duration = Math.min(560, 200 + Math.sqrt(Math.abs(change)) * 6);
     const t0 = performance.now();
     addEventListener("wheel", stopScrollAnimation, { passive: true });
-    addEventListener("touchstart", stopScrollAnimation, { passive: true });
+    addEventListener("pointerdown", stopScrollAnimation, { passive: true });
     addEventListener("keydown", stopScrollAnimation);
     const tick = (now: number) => {
       const t = Math.min(1, (now - t0) / duration);
-      scrollTo(0, Math.round(start + change * smooth(t)));
+      scrollTo({ top: start + change * (1 - (1 - t) ** 3), behavior: "instant" });
       if (t < 1) scrollAnimation = requestAnimationFrame(tick);
       else stopScrollAnimation();
     };
@@ -128,46 +125,87 @@ export function initMotion() {
       const headerHeight = document.querySelector<HTMLElement>('.header')?.offsetHeight ?? 0;
       const pinnedJourney = destination === "journey" && !mobileJourney.matches && !reduceMotion.matches;
       scrollPageTo(destination === "home" ? 0 : pinnedJourney ? Math.ceil(top) : top - headerHeight);
-      if (destination === "main") target.focus({ preventScroll: true });
+      if (event.detail === 0 || destination === "main") {
+        if (!target.hasAttribute("tabindex")) target.tabIndex = -1;
+        target.focus({ preventScroll: true });
+      }
     });
   });
 
   function update() {
     frame = 0;
+    // Take all layout measurements before touching styles.
     const reduced = reduceMotion.matches;
-    const fluid = reduced || mobileJourney.matches;
-    const showSummit = scrollY > innerHeight * 0.7 && footer.getBoundingClientRect().top > innerHeight;
-    summit.classList.toggle("is-visible", showSummit);
-    summit.setAttribute("aria-hidden", String(!showSummit));
-    summit.tabIndex = showSummit ? 0 : -1;
+    const mobile = mobileJourney.matches;
+    const fluid = reduced || mobile;
+    const viewport = innerHeight;
+    const top = scrollY;
+    const showSummit = summit === document.activeElement ||
+      (top > viewport * 0.7 && footer.getBoundingClientRect().top > viewport);
     const rect = section.getBoundingClientRect();
-    const p = clamp(-rect.top / Math.max(1, section.offsetHeight - innerHeight));
-    let buildProgress = p;
-    if (!reduced && mobileJourney.matches) {
-      const scene = perspective.getBoundingClientRect();
-      // Assemble while the island moves through the lower and middle viewport.
-      buildProgress = buildEnd * range(innerHeight - scene.top, innerHeight * 0.28, innerHeight - 72);
+    const progress = fluid ? 0 : clamp(-rect.top / Math.max(1, rect.height - viewport));
+    const buildProgress = reduced ? 1 : mobile
+      ? buildEnd * range(viewport - perspective.getBoundingClientRect().top, viewport * 0.28, viewport - 72)
+      : progress;
+    const heroExit = reduced ? 0 : clamp(-hero.getBoundingClientRect().top / viewport);
+    const ornamentProgress = ornaments.map(element => {
+      if (reduced) return 1;
+      const box = element.getBoundingClientRect();
+      return range(viewport - box.top, 0, Math.min(viewport * 0.45, Math.max(1, box.height)));
+    });
+
+    if (showSummit !== summitVisible) {
+      summit.classList.toggle("is-visible", showSummit);
+      summit.inert = !showSummit;
+      summitVisible = showSummit;
     }
-    const sceneProgress = fluid ? 0 : p;
-    const phase = Math.min(2, Math.floor(p * 3));
-    const night = range(sceneProgress, 0.67, 0.97);
-    stage.style.setProperty("--dusk", String(range(sceneProgress, 0.23, 0.51) * (1 - range(sceneProgress, 0.68, 0.96))));
-    stage.style.setProperty("--night", String(night));
-    stage.style.setProperty("--copy-night", night > 0.55 ? "1" : "0");
-    stage.style.setProperty("--progress", String(sceneProgress));
-    stage.style.setProperty("--orb-x", `${(sceneProgress - 0.5) * 50}px`);
-    stage.style.setProperty("--orb-y", `${Math.sin(sceneProgress * Math.PI) * -25}px`);
-    percent.textContent = String(Math.round(p * 100)).padStart(2, "0");
-    scrollHint.style.opacity = String(1 - range(sceneProgress, 0.93, 0.99));
-    world.style.transform = fluid ? "none" : `translate3d(0,${range(p, 0.65, 1) * -8}px,0)`;
-    if (reduced) {
-      for (const { el } of pieces) {
-        el.style.removeProperty("opacity");
-        el.style.removeProperty("transform");
+    if (progress !== activeProgress || fluid !== wasFluid) {
+      const night = range(progress, 0.67, 0.97);
+      const phase = fluid ? -1 : Math.min(copies.length - 1, Math.floor(progress * copies.length));
+      stage.style.setProperty("--dusk", String(range(progress, 0.23, 0.51) * (1 - range(progress, 0.68, 0.96))));
+      stage.style.setProperty("--night", String(night));
+      stage.style.setProperty("--copy-night", night >= 0.55 ? "1" : "0");
+      stage.style.setProperty("--reading-light", String(range(night, 0.13, 0.85) * 0.9));
+      stage.style.setProperty("--progress", String(progress));
+      stage.style.setProperty("--orb-x", `${(progress - 0.5) * 50}px`);
+      stage.style.setProperty("--orb-y", `${Math.sin(progress * Math.PI) * -25}px`);
+      const value = String(Math.round(progress * 100)).padStart(2, "0");
+      if (percent.textContent !== value) percent.textContent = value;
+      scrollHint.style.opacity = String(1 - range(progress, 0.93, 0.99));
+      world.style.transform = fluid ? "none" : `translate3d(0,${range(progress, 0.65, 1) * -8}px,0)`;
+
+      copies.forEach((copy, index) => {
+        if (fluid) {
+          copy.style.removeProperty("opacity");
+          copy.style.removeProperty("transform");
+          copy.style.removeProperty("visibility");
+          return;
+        }
+        // Keep a paused chapter readable at the boundary and avoid overlapping headlines.
+        const fade = 0.027;
+        const start = index / copies.length;
+        const end = (index + 1) / copies.length;
+        const enter = index === 0 ? 1 : range(progress, start, start + fade);
+        const exit = index === copies.length - 1 ? 0 : range(progress, end - fade, end);
+        copy.style.opacity = String(0.88 + 0.12 * enter * (1 - exit));
+        copy.style.visibility = index === phase ? "visible" : "hidden";
+        copy.style.transform = `translateY(calc(-50% + ${(1 - enter - exit) * 8}px))`;
+      });
+      if (phase !== activeChapter || fluid !== wasFluid) {
+        copies.forEach((copy, index) => {
+          if (fluid) copy.removeAttribute("aria-hidden");
+          else copy.setAttribute("aria-hidden", String(index !== phase));
+        });
+        chapterButtons.forEach((button, index) => {
+          button.classList.toggle("active", phase === index);
+          button.setAttribute("aria-pressed", String(phase === index));
+        });
+        activeChapter = phase;
       }
-      bridge.style.removeProperty("transform");
-      bridgePivot.style.removeProperty("opacity");
-    } else {
+      activeProgress = progress;
+      wasFluid = fluid;
+    }
+    if (buildProgress !== activeBuildProgress) {
       for (const { el, values: [start, end, x, y] } of pieces) {
         const t = range(buildProgress, start, end);
         el.style.opacity = String(t);
@@ -175,45 +213,23 @@ export function initMotion() {
       }
       bridge.style.transform = `rotate(${-78 * (1 - range(buildProgress, 0.24, 0.40))}deg)`;
       bridgePivot.style.opacity = String(range(buildProgress, 0.16, 0.23));
+      activeBuildProgress = buildProgress;
     }
-    copies.forEach((copy, index) => {
-      if (fluid) {
-        copy.style.removeProperty("opacity");
-        copy.style.removeProperty("transform");
-        copy.style.removeProperty("visibility");
-        copy.removeAttribute("aria-hidden");
-      } else {
-        const visible = index === phase;
-        copy.style.opacity = visible ? "1" : "0";
-        copy.style.transform = `translateY(calc(-50% + ${(index - phase) * 34}px))`;
-        copy.style.visibility = visible ? "visible" : "hidden";
-        copy.setAttribute("aria-hidden", String(!visible));
-      }
+    if (heroExit !== previousHeroExit) {
+      hero.style.setProperty("--hero-turn", `${heroExit * 2}deg`);
+      hero.style.setProperty("--hero-shift", `${heroExit * -18}px`);
+      previousHeroExit = heroExit;
+    }
+    ornaments.forEach((element, index) => {
+      const value = String(ornamentProgress[index]);
+      if (element.style.getPropertyValue("--enter") !== value) element.style.setProperty("--enter", value);
     });
-    if (phase !== activeChapter) {
-      chapterButtons.forEach((button, index) => {
-        button.classList.toggle("active", phase === index);
-        button.setAttribute("aria-pressed", String(phase === index));
-      });
-      activeChapter = phase;
-    }
-    const heroRect = hero.getBoundingClientRect();
-    const exit = reduced ? 0 : clamp(-heroRect.top / innerHeight);
-    hero.style.setProperty("--hero-turn", `${exit * 2}deg`);
-    hero.style.setProperty("--hero-shift", `${exit * -26}px`);
-    if (reduced) {
-      hero.style.setProperty("--pointer-x", "0deg");
-      hero.style.setProperty("--pointer-y", "0deg");
-    }
-    for (const el of ornaments) {
-      const box = el.getBoundingClientRect();
-      const enter = range(innerHeight - box.top, 0, Math.min(innerHeight * 0.45, Math.max(1, box.height)));
-      el.style.setProperty("--enter", String(reduced ? 1 : enter));
-    }
   }
   function requestUpdate() { if (!frame) frame = requestAnimationFrame(update); }
   addEventListener("scroll", requestUpdate, { passive: true });
-  addEventListener("resize", requestUpdate);
+  addEventListener("resize", () => { stopScrollAnimation(); requestUpdate(); });
+  addEventListener("localechange", () => { stopScrollAnimation(); requestUpdate(); });
+  summit.addEventListener("focusout", requestUpdate);
   addEventListener("pageshow", requestUpdate);
   reduceMotion.addEventListener("change", () => { stopScrollAnimation(); requestUpdate(); });
   mobileJourney.addEventListener("change", requestUpdate);

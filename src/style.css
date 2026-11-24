@@ -15,7 +15,7 @@
   --border: #dfe2d6;
   scroll-behavior: smooth;
   scroll-padding-top: 36px;
-  transition: background-color 1s ease, color 1s ease;
+  transition: background-color var(--motion-scene) var(--motion-ease), color var(--motion-scene) var(--motion-ease);
 }
 * {
   box-sizing: border-box;
@@ -136,13 +136,15 @@ button:focus-visible {
   position: absolute;
   bottom: 2px;
   left: 0;
-  right: 100%;
-  height: 1px;
-  background: var(--ink);
-  transition: right 0.2s;
-}
-.desktop-nav a:hover:after {
   right: 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--motion-fast) var(--motion-ease);
+}
+.desktop-nav a:is(:hover, :focus-visible, [aria-current="location"]):after {
+  transform: scaleX(1);
 }
 .nav-contact {
   font-size: 13px;
@@ -249,8 +251,8 @@ h1 {
   padding: 17px 24px;
   font-size: 13px;
   transition:
-    background 0.2s,
-    transform 0.2s;
+    background-color var(--motion-fast) var(--motion-ease),
+    transform var(--motion-normal) var(--motion-ease);
 }
 .button svg {
   width: 20px;
@@ -301,7 +303,6 @@ h1 {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  transition: background 1s;
 }
 .island-svg {
   width: 100%;
@@ -355,7 +356,7 @@ h1 {
   padding: 9px;
   background: transparent;
   border-radius: 50%;
-  transition: background 0.2s;
+  transition: background-color var(--motion-fast) var(--motion-ease);
   min-width: 39px;
   min-height: 39px;
   display: grid;
@@ -393,10 +394,10 @@ h1 {
 }
 .scene-moon {
   opacity: 0;
-  transition: opacity 1s;
+  transition: opacity var(--motion-scene) var(--motion-ease);
 }
 .scene-sun {
-  transition: opacity 1s;
+  transition: opacity var(--motion-scene) var(--motion-ease);
 }
 .scene::before {
   content: "";
@@ -406,7 +407,7 @@ h1 {
   border-radius: inherit;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 1s ease;
+  transition: opacity var(--motion-scene) var(--motion-ease);
   background: radial-gradient(
     ellipse at 50% 45%,
     #2b3d4e 15%,
@@ -428,30 +429,7 @@ h1 {
   opacity: 0.45;
 }
 .floating-island {
-  animation: float 7s ease-in-out infinite;
-  transition: filter 1s;
-}
-.cloud-back {
-  animation: drift 11s ease-in-out infinite;
-}
-.cloud-front {
-  animation: drift 9s ease-in-out infinite reverse;
-}
-.floating-block {
-  animation: float 5s ease-in-out infinite;
-}
-.block-two {
-  animation-delay: -2s;
-}
-.flag {
-  transform-box: fill-box;
-  transform-origin: left center;
-  animation: flag 5s ease-in-out infinite;
-}
-#scene-cat.greeting .cat-body {
-  transform-box: fill-box;
-  transform-origin: center bottom;
-  animation: cat-hop 0.5s ease-in-out 3;
+  transition: filter var(--motion-scene) var(--motion-ease);
 }
 .below-hero {
   display: flex;
@@ -584,7 +562,7 @@ h2 {
 .project-card {
   border-radius: 8px;
   display: block;
-  transition: transform 0.3s;
+  transition: transform var(--motion-normal) var(--motion-ease);
 }
 .project-card:hover {
   transform: translateY(-6px);
@@ -607,7 +585,7 @@ h2 {
 .project-art > svg {
   height: 100%;
   width: 100%;
-  transition: transform 0.6s;
+  transition: transform var(--motion-scene) var(--motion-ease);
 }
 .project-card:hover .project-art > svg {
   transform: scale(1.07);
@@ -889,7 +867,7 @@ h2 {
   position: fixed;
   left: 50%;
   bottom: 30px;
-  transform: translate(-50%, 20px);
+  transform: translate(-50%, 6px);
   padding: 14px 23px;
   border-radius: 6px;
   background: #304b3fea;
@@ -900,8 +878,8 @@ h2 {
   opacity: 0;
   pointer-events: none;
   transition:
-    opacity 0.25s,
-    transform 0.25s;
+    opacity var(--motion-normal) var(--motion-ease),
+    transform var(--motion-normal) var(--motion-ease);
   max-width: calc(100% - 36px);
   width: max-content;
   text-align: center;
@@ -910,64 +888,7 @@ h2 {
   opacity: 1;
   transform: translate(-50%, 0);
 }
-.reveal {
-  opacity: 0;
-  transform: translateY(16px);
-  transition:
-    opacity 0.6s,
-    transform 0.6s;
-}
-.reveal.revealed {
-  opacity: 1;
-  transform: translateY(0);
-}
-.project-card.reveal.revealed:hover {
-  transform: translateY(-6px);
-}
-.project-card:nth-child(2),
-.explore-item:nth-child(2) {
-  transition-delay: 0.07s;
-}
-.project-card:nth-child(3),
-.explore-item:nth-child(3) {
-  transition-delay: 0.14s;
-}
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-@keyframes drift {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(12px);
-  }
-}
-@keyframes flag {
-  0%,
-  100% {
-    transform: scaleX(1);
-  }
-  50% {
-    transform: scaleX(0.82);
-  }
-}
-@keyframes cat-hop {
-  0%,
-  100% {
-    transform: translateY(0) rotate(0);
-  }
-  50% {
-    transform: translateY(-15px) rotate(-8deg);
-  }
-}
+
 @media (min-width: 1500px) {
   .hero {
     min-height: 760px;
@@ -1241,7 +1162,7 @@ h2 {
     width: 16px;
     height: 1px;
     background: var(--ink);
-    transition: transform 0.2s;
+    transition: transform var(--motion-normal) var(--motion-ease);
   }
   .menu-toggle[aria-expanded="true"] span:first-child {
     transform: translateY(3.5px) rotate(45deg);
@@ -1252,7 +1173,7 @@ h2 {
   .mobile-nav:not([hidden]) {
     display: flex;
     position: absolute;
-    top: 75px;
+    top: calc(100% + 3px);
     left: 0;
     right: 0;
     background: #fbfaf5;

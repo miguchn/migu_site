@@ -57,7 +57,6 @@ export function island() {
     <circle class="door-handle" cx="23" cy="43" r="1.5" fill="#f1d2a2"/>
   </g></g>
   ${stairs(188, 402, 8, 15)}
-  <path class="stair-light" d="M217 409l15-7.5v-8l15-7.5v-8l15-7.5v-8l15-7.5v-8l15-7.5v-8l15-7.5v-8l15-7.5v-8" pathLength="260" stroke="#fff8d5" stroke-width="3" stroke-linecap="round" stroke-dasharray="10 250" opacity="0"/>
   ${block(177, 321, 43, 43, 20, green)}
   ${block(179, 218, 38, 38, 107, cream)}
   <g transform="translate(217 224) skewY(-26.565)"><path d="M0 63V26a14 14 0 0 1 28 0v37Z" fill="#a47867"/><path class="scene-window window-one" d="M5 63V28a9 9 0 0 1 18 0v35" fill="#d5a88e"/></g>

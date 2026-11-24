@@ -11,7 +11,7 @@
   min-height: 0;
   padding: 70px max(6%, calc((100% - 1240px) / 2));
   overflow: hidden;
-  color: color-mix(in srgb, #263e35, #fff1d9 calc(var(--copy-night, 0) * 100%));
+  color: #263e35;
 }
 .journey-wash { position: absolute; inset: 0; pointer-events: none; }
 .wash-dawn {
@@ -36,8 +36,9 @@
   letter-spacing: 1px;
   margin-bottom: 25px;
 }
+.journey-stage .chapter-copy h2 { color: inherit; }
 .chapter-copy h2 span {
-  color: color-mix(in srgb, #875348, #f1d6b5 calc(var(--copy-night, 0) * 100%));
+  color: #875348;
   position: relative;
 }
 .chapter-copy > p:last-child { font-size: 12px; line-height: 2.1; letter-spacing: .3px; color: inherit; }
@@ -85,10 +86,13 @@ body .journey-perspective {
   gap: 8px;
   align-items: center;
   min-height: 44px;
-  transition: background .25s, color .25s;
+  transition: background-color var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease);
 }
 .journey-chapters button span { font: 9px var(--mono); opacity: .7; }
-.journey-chapters button.active, .journey-chapters button:hover { background: #36584f; color: #fff5df; }
+.journey-chapters button.active, .journey-chapters button:focus-visible { background: #36584f; color: #fff5df; }
+@media (hover: hover) and (pointer: fine) {
+  .journey-chapters button:hover { background: #36584f; color: #fff5df; }
+}
 .journey-progress > span { display: block; height: 100%; background: #ad7867; transform-origin: left; transform: scaleX(var(--progress, 0)); }
 
 /* Only the enhanced desktop experience pins the stage. */
@@ -104,13 +108,25 @@ body .journey-perspective {
     transform: translateY(-50%);
     pointer-events: none;
   }
+  body.motion-ready .journey-copy::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 30%;
+    width: calc(125% + 20vw);
+    height: min(76vh, 520px);
+    transform: translate(-50%, -50%);
+    /* End the glow at zero opacity on every edge of its box. */
+    background: radial-gradient(ellipse 50% 50%, #f8f2de 23%, #f8f2de00 100%);
+    opacity: var(--reading-light, 0);
+    pointer-events: none;
+  }
   body.motion-ready .chapter-copy {
     position: absolute;
     top: 50%;
     left: 0;
     right: 0;
     padding: 0;
-    transition: opacity .18s ease, transform .32s cubic-bezier(.2,.8,.2,1);
   }
   body.motion-ready .chapter-copy:not(:first-child) { opacity: 0; visibility: hidden; }
   body.motion-ready .chapter-copy h2 { font-size: clamp(36px, 4.1vw, 62px); }
@@ -134,6 +150,9 @@ body .journey-perspective {
     justify-content: space-between;
   }
   body.motion-ready .journey-topline { top: 32px; font: 9px var(--mono); letter-spacing: 1.7px; }
+  body.motion-ready :is(.journey-topline, .journey-bottom) {
+    color: color-mix(in srgb, #263e35, #fff1d9 calc(var(--copy-night, 0) * 100%));
+  }
   body.motion-ready .journey-topline > :last-child { display: block; }
   .journey-percent { font-weight: 400; display: inline-block; min-width: 20px; }
   body.motion-ready .journey-bottom { bottom: 34px; right: max(105px, 4%); }

@@ -15,9 +15,16 @@ export function initNavigation() {
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
   const desktop = matchMedia("(min-width: 701px)");
   let frame = 0;
+  let previousVisibility: number | undefined;
+  let previousClosing: boolean | undefined;
+  let previousBrandFocus: boolean | undefined;
+  let previousCurrent: string | undefined;
+  let wasImmersive: boolean | undefined;
+  const intro = document.getElementById("brand-intro");
 
   function update() {
     frame = 0;
+    if (intro && !intro.hidden) return;
     const height = header!.offsetHeight;
     const rect = journey!.getBoundingClientRect();
     // Mouse clicks leave focus on language/navigation controls. Only keyboard
@@ -31,18 +38,31 @@ export function initNavigation() {
     const immersive = visibility < 0.05;
     const closing = contact!.getBoundingClientRect().top <= height + 1;
 
-    header!.style.setProperty("--nav-visibility", String(visibility));
-    header!.classList.toggle("is-immersive", immersive);
-    header!.classList.toggle("is-closing", closing);
-    header!.classList.toggle("has-brand-focus", Boolean(brand?.contains(document.activeElement)));
-    header!.inert = immersive;
-    if (brand) brand.inert = closing && !brand.contains(document.activeElement);
-
+    const brandFocus = Boolean(brand?.contains(document.activeElement));
     const current = sections.filter(section => section.getBoundingClientRect().top <= height + 80).at(-1)?.id;
-    for (const link of links) {
-      if (!immersive && current === link.dataset.scroll) link.setAttribute("aria-current", "location");
-      else link.removeAttribute("aria-current");
+    if (visibility !== previousVisibility) {
+      header!.style.setProperty("--nav-visibility", String(visibility));
+      previousVisibility = visibility;
     }
+    if (closing !== previousClosing || brandFocus !== previousBrandFocus) {
+      header!.classList.toggle("is-closing", closing);
+      header!.classList.toggle("has-brand-focus", brandFocus);
+      if (brand) brand.inert = closing && !brandFocus;
+      previousClosing = closing;
+      previousBrandFocus = brandFocus;
+    }
+    if (immersive !== wasImmersive) {
+      header!.classList.toggle("is-immersive", immersive);
+      header!.inert = immersive;
+    }
+    if (current !== previousCurrent || immersive !== wasImmersive) {
+      for (const link of links) {
+        if (!immersive && current === link.dataset.scroll) link.setAttribute("aria-current", "location");
+        else link.removeAttribute("aria-current");
+      }
+      previousCurrent = current;
+    }
+    wasImmersive = immersive;
   }
 
   function requestUpdate() {
@@ -50,7 +70,9 @@ export function initNavigation() {
   }
   addEventListener("scroll", requestUpdate, { passive: true });
   addEventListener("resize", requestUpdate);
+  addEventListener("localechange", requestUpdate);
   addEventListener("pageshow", requestUpdate);
+  addEventListener("brandintroend", requestUpdate);
   header.addEventListener("focusin", requestUpdate);
   header.addEventListener("focusout", requestUpdate);
   reducedMotion.addEventListener("change", requestUpdate);
